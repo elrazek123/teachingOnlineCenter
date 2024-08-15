@@ -353,8 +353,37 @@ if(!user.isActivated)
 // check on the user state to know what will be the next:
 if(!user.state||user.state=="accepted")
 {
+    const {loggedForAccepted}=user;
+    console.log("yes i enter this")
+    if(user.state=="accepted")
+    {
+        console.log("then this");
+        
+        if(loggedForAccepted==0||loggedForAccepted)
+        {
+            console.log("yes");
+            if(loggedForAccepted==0)
+            {
+                // we should  adding for him:
+                user.loggedForAccepted=1;
+                await user.save();
+                // make the token and do this:
+                const EmployeeToken=jwt.sign({_id:user._id,email:user.email,role:user.role,name:user.name,state:user.state},"secretKey",{expiresIn:"1d"});
+                await empTokenModel.create({token:EmployeeToken,employee:user._id,userAgent:req.headers['user-agent']});
+                return res.json({success:true,message:"logged In successfully",loggedForAccepted,token:EmployeeToken});
+            } 
+        }
+    }
 // then return the resposen without the token:
-return res.json({success:true,message:"successfully enter your private pinCode"});
+if(loggedForAccepted)
+{
+    return res.json({success:true,message:"successfully enter your private pinCode",loggedForAccepted});
+
+}
+else
+{
+    return res.json({success:true,message:"successfully enter your private pinCode",loggedForAccepted});
+}
 }
 // if there is the state and the state is not be accepted:
 if(user.state&&user.state!="accepted")
@@ -363,11 +392,11 @@ if(user.state&&user.state!="accepted")
     let token="";
    if(!user.state)
    {
-     token=jwt.sign({_id:user._id,email:user.email,role:user.role},"secretKey",{expiresIn:"8d"});
+     token=jwt.sign({_id:user._id,email:user.email,role:user.role,name:user.name},"secretKey",{expiresIn:"8d"});
    }
    else
    {
-    token=jwt.sign({_id:user._id,email:user.email,state:user.state,role:user.role},"secretKey",{expiresIn:"8d"});
+    token=jwt.sign({_id:user._id,email:user.email,state:user.state,role:user.role,name:user.name},"secretKey",{expiresIn:"8d"});
    }
     const objectToken={};
     objectToken.token=token;
@@ -420,11 +449,11 @@ export const getPinCodeForLogin=async (req,res,next)=>
         // then send the resposne with the token:
         if(user.state&&user.state=="accepted")
         {
-           token=jwt.sign({_id:user._id,email:user.email,state:user.state,role:user.role},"secretKey",{expiresIn:"8d"});
+           token=jwt.sign({_id:user._id,email:user.email,state:user.state,role:user.role,name:user.name},"secretKey",{expiresIn:"8d"});
         }
         else
         {
-            token=jwt.sign({_id:user._id,email:user.email,role:user.role},"secretKey",{expiresIn:"8d"});
+            token=jwt.sign({_id:user._id,email:user.email,role:user.role,name:user.name},"secretKey",{expiresIn:"8d"});
         }
         // amek the token and send the resposne:
         let objectToken={};
@@ -1259,6 +1288,7 @@ export const acceptOrRejectRequest=async (req,res,next)=>
             request.payState=payState;
             const code=nanoid(8);
             request.pinCode=code;
+            request.loggedForAccepted=0;
             await request.save();
             // sending an email:
             const sendingEmailOne=await sendingEmail({to:request.email,subject:"teachingOnlineCenter request result (final)",html:`<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -1626,6 +1656,8 @@ export const getEmployeesForSuperAdmin=async (req,res,next)=>
             objectFIlter.phone={$regex:data.phone,$options:"i"};
             console.log('i enter here');
         }
+        if(data.state)
+            objectFIlter.state=data.state;
         if(data.role)
             objectFIlter.role=data.role;
         if(data.stoppedBySuperAdmin)
@@ -1635,6 +1667,43 @@ export const getEmployeesForSuperAdmin=async (req,res,next)=>
         // make th equery:
         console.log(objectFIlter);
         results=await employeeModel.find(objectFIlter).populate([{path:"addedBy"},{path:"revisedBy"}]).sort("name");
+        // hcekc on the satte if it exists or not:
+        const {externalOrNot}=req.query;
+        // check on the extrnal or not:
+        if(externalOrNot)
+        {
+            if(externalOrNot=="yes")
+            {
+                let newArray=[];
+                results.forEach((ele)=>
+                {
+                    if(ele.state)
+                    {
+                        newArray.push(ele);
+                    }
+                });
+                // return the response:
+                return res.json({success:true,employees:newArray,numberEmployees:newArray.length});
+            }
+            else if(externalOrNot=="no")
+            {
+                let newArray=[];
+                results.forEach((ele)=>
+                {
+                    if(!ele.state)
+                    {
+                        newArray.push(ele);
+                    }
+                });
+                // return the response:
+                return res.json({success:true,employees:newArray,numberEmployees:newArray.length});
+            }   
+            else
+            {
+                console.log("there is no external");
+            }
+
+        }
         // retur he response:
         return res.json({sucess:true,employees:results,numberEmployees:results.length});
     }

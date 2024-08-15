@@ -137,6 +137,10 @@ stoppedBy:
     type:Types.ObjectId,
     ref:"employee",
 },
+loggedForAccepted:
+{
+    type:Number,
+}
 }
 ,{timestamps:true,toObject:{virtuals:true},toJSON:{virtuals:true},strictQuery:true});
 employeeSchema.plugin(uniqueValidator,{message:(props)=>`${props.value} is already exists please change it and try again`});

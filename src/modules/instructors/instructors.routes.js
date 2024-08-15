@@ -5,7 +5,10 @@ import * as insSchema from './instructor.schema.js';
 import uploadingFileRequets from "../../utils/uploadingFiles.js";
 import authentecationEmployee from './../../auth/employee.auth.js';
 import authorizationEmpoyee from "../../authorization/employee.authorization.js";
+import courseRouter from "../courses/courses.routes.js";
 const instRouter=Router({mergeParams:true });
+// cousrers routes:
+instRouter.use("/courses",courseRouter);
 // instriuctors api's:
 // add request:
 instRouter.post("/addRequestInstructor",uploadingFileRequets().any(),validation.bodyValidation(insSchema.addRequestSchema),insController.addRequet);

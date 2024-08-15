@@ -106,6 +106,8 @@ phone:joi.string().min(1).allow(''),
 role:joi.string().valid('admin','instructor').allow(''),
 stoppedBySuperAdmin:joi.boolean().valid(true,false,'true','false').allow(''),
 payState:joi.boolean().valid('true','false',true,false).allow(''),
+externalOrNot:joi.string().valid("yes","no").allow(''),
+state:joi.string().valid('notInQueue','accepted','initiallyAccepted','rejected','underRevising').allow(''),
 }).required();
 export const  employeeId=joi.object(
 {

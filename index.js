@@ -6,6 +6,7 @@ import uploadingFileRequets from './src/utils/uploadingFiles.js';
 import schedule from 'node-schedule';
 import employeeModel from './db/models/employees/meployees.model.js';
 import sendingEmail from './src/utils/sendEmail.js';
+import categoryRouter from './src/modules/categories/catgeory.routes.js';
 const app=express();
 app.use(express.json());
 app.use(cors());
@@ -13,10 +14,9 @@ app.use(cors());
 await connectToDb();
 // api's of the models:
 app.use("/employees",empRouter);
-app.post("/upload",uploadingFileRequets().any(),(req,res,next)=>
-{
-    console.log(req.files);
-})
+// catgeor routes:
+app.use("/categories",categoryRouter);
+
 // not found page api:
 app.all("*",(req,res,next)=>{
     return res.json({
@@ -108,6 +108,3 @@ catch(err)
 })
 // connect to the server port:
 app.listen(3000,()=>{console.log("the server is conncted sucessfully on the port ",3000)});
-
-
-
