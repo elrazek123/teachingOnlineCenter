@@ -1,194 +1,133 @@
 import { nanoid } from "nanoid";
 import cloudinary from "../../utils/cloudinary.config.js";
 import courseModel from "../../../db/models/courses/courses.model.js";
-import {addAccessBySchema, updateCccesspibeBySchemaDelete, updateCccesspibeBySchemaUpdate} from './coursers.schema.js';
+import {addAccessBySchema, checkOnTheWahtWillYouLearnUpdate, updateCccesspibeBySchemaDelete, updateCccesspibeBySchemaUpdate} from './coursers.schema.js';
 import checkOnCourseUpdateSchema from "../../utils/checkOnCourseUpdate.js";
 import categoryModel from "../../../db/models/catgeory/catagory.model.js";
 import { json } from "express";
 // add course comtroller:
-export const addCourse=async (req,res,next)=>
-{
-try
-{
-// get the id of the instructor:
-const  {_id,name}=req.data;
-// egt the data o the course:
-let data=req.body;
-// make the validation required on the every field:
-let uploadingPhotoObject={};
-let accesibleByAnyOneObject={};
-let objectUrlArray=[];
-let arrayObjectOfObjectives=[];
-let arrayDescribtionContent=[];
-// check first on theprice of the course:
-if(data.coursePrice)
-{
-    // check if the course if the course price is free:
-    if(data.coursePrice!="free")
-    {
-       if(+data.coursePrice!=data.coursePrice||+data.coursePrice==NaN)
-       {
-        return next(new Error("the cousre price must be between 1 and 100000 or free"));
-       }
-       if(+data.coursePrice<=0)
-       {
-        return next(new Error("the cousre price must be between 1 and 100000 or free"))
-       }
-    }
-}
-// check on the course hours:
-const {courseHours}=data;
-if(courseHours)
-{
-    if(+courseHours!=courseHours||+courseHours==NaN)
-    {
-        return next(new Error("the cousre hourse must be a number between 1:100000"));
-    }
-    if(courseHours<=0)
-    {
-        return next(new Error("the course hours value must be large than 0"));
-    }
-}
-// check on the files:
-if(req.files||req.files.length>0)
-{
-    // check on the files:
-    if(req.files.length>1)
-    {
-        return next(new Error("you only have the access to upload one image for the cover of the course"));
-    }
-    const uploadingPhoto=await cloudinary.uploader.upload(req.files[0].path,{folder:`/uploads/teachingOnlineCenter/employees/${name}/courses/cover/`});
-    uploadingPhotoObject.public_id=uploadingPhoto.public_id;
-    uploadingPhotoObject.secure_url=uploadingPhoto.secure_url;
-    data.coursePicture=uploadingPhotoObject;
-}
-//handle the accesble by any one:
-let {accesibleByAnyOne}=data;
-accesibleByAnyOne=JSON.parse(accesibleByAnyOne);
-data.accesibleByAnyOne=JSON.parse(data.accesibleByAnyOne);
-console.log(accesibleByAnyOne);
-if(accesibleByAnyOne&&accesibleByAnyOne.videoUrl||accesibleByAnyOne&&accesibleByAnyOne.describtion)
-{
-if(accesibleByAnyOne.videoUrl.length<=0&&accesibleByAnyOne.describtion==""||accesibleByAnyOne.describtion==null)
-{
-    delete data.accesibleByAnyOne;
-}
-if(accesibleByAnyOne.describtion.length!=accesibleByAnyOne.videoUrl.length)
-    {
-      return next(new Error("validation error you must add an describtion for each vidoeUrl"));
-    }
-// handle the vidoe url and make the code for it:
-else
-{
-    if(accesibleByAnyOne.videoUrl)
-        {
-            // chekc on the two cases:
-            // check on the array and make the things:
-            console.log(accesibleByAnyOne.videoUrl[0]);
-            if(accesibleByAnyOne.videoUrl.length>0)
-            {
-                // loop on the array:
-                accesibleByAnyOne.videoUrl.forEach((ele)=>
-                {
-                    const objectUrl={};
-                    objectUrl.urlId=nanoid(8);
-                    objectUrl.url=ele;
-                    objectUrlArray.push(objectUrl);
-                });
-                data.accesibleByAnyOne.videoUrl=objectUrlArray;
-            }
+export const addCourse = async (req, res, next) => {
+    try {
+      // Get the instructor's ID and name
+      const { _id, name } = req.data;
+      // Get the course data
+      let data = req.body;
+      let uploadingPhotoObject = {};
+      let objectUrlArray = [];
+      let arrayObjectOfObjectives = [];
+      let arrayDescribtionContent = [];
+  
+      // Validate the course price
+      if (data.coursePrice) {
+        if (data.coursePrice !== "free") {
+          const price = parseFloat(data.coursePrice);
+          if (isNaN(price) || price <= 0 || price > 100000) {
+            return next(new Error("Course price must be between 1 and 100000 or free"));
+          }
         }
-    // check on the describtion:
-    if(accesibleByAnyOne.describtion.length>0)
-    {
-        if(accesibleByAnyOne.describtion.length!=accesibleByAnyOne.videoUrl.length)
-            {
-              return next(new Error("validation error you must add an describtion for each vidoeUrl"));
-            }
-        // loop on the array also:
-        accesibleByAnyOne.describtion.forEach((ele)=>
-        {
-            // make the code :
-            const objectDescribtion={};
-            // add the new object fro each one:
-            objectDescribtion.describtionId=nanoid(8);
-            objectDescribtion.describtionContent=ele;
-            // push on the array:
-            arrayDescribtionContent.push(objectDescribtion);
+      }
+  
+      // Validate the course hours
+      const { courseHours } = data;
+      if (courseHours) {
+        const hours = parseFloat(courseHours);
+        if (isNaN(hours) || hours <= 0) {
+          return next(new Error("Course hours must be a positive number"));
+        }
+      }
+  
+      // Handle uploaded files
+      if (req.files && req.files.length > 0) {
+        if (req.files.length > 1) {
+          return next(new Error("You can only upload one image for the course cover"));
+        }
+        const uploadingPhoto = await cloudinary.uploader.upload(req.files[0].path, {
+          folder: `/uploads/teachingOnlineCenter/employees/${name}/courses/cover/`
         });
-        data.accesibleByAnyOne.describtion=arrayDescribtionContent;
+        uploadingPhotoObject.public_id = uploadingPhoto.public_id;
+        uploadingPhotoObject.secure_url = uploadingPhoto.secure_url;
+        data.coursePicture = uploadingPhotoObject;
+      }
+  
+      // Handle accessible by anyone data
+      let { accesibleByAnyOne } = data;
+      accesibleByAnyOne = JSON.parse(accesibleByAnyOne);
+      if (accesibleByAnyOne && (accesibleByAnyOne.videoUrl || accesibleByAnyOne.describtion)) {
+        if ((accesibleByAnyOne.videoUrl && accesibleByAnyOne.videoUrl.length <= 0) || !accesibleByAnyOne.describtion) {
+          delete data.accesibleByAnyOne;
+        } else {
+          if (accesibleByAnyOne.videoUrl) {
+            accesibleByAnyOne.videoUrl.forEach((ele) => {
+              const objectUrl = { urlId: nanoid(8), url: ele };
+              objectUrlArray.push(objectUrl);
+            });
+            data.accesibleByAnyOne.videoUrl = objectUrlArray;
+          }
+          if (accesibleByAnyOne.describtion) {
+            if (accesibleByAnyOne.describtion.length !== (accesibleByAnyOne.videoUrl ? accesibleByAnyOne.videoUrl.length : 0)) {
+              return next(new Error("Validation error: you must provide a description for each video URL"));
+            }
+            accesibleByAnyOne.describtion.forEach((ele) => {
+              const objectDescribtion = { describtionId: nanoid(8), describtionContent: ele };
+              arrayDescribtionContent.push(objectDescribtion);
+            });
+            data.accesibleByAnyOne.describtion = arrayDescribtionContent;
+          }
+        }
+      }
+  
+      // Validate what will be learned
+      let { whatWillYouLearn } = data;
+      whatWillYouLearn = JSON.parse(whatWillYouLearn);
+      if (!whatWillYouLearn || whatWillYouLearn.length <= 0) {
+        return next(new Error("You must specify the objectives of the course"));
+      } else {
+        whatWillYouLearn.forEach((ele) => {
+          const objectObjective = { id: nanoid(8), objective: ele };
+          arrayObjectOfObjectives.push(objectObjective);
+        });
+        data.whatWillYouLearn = arrayObjectOfObjectives;
+      }
+  
+      // Add the instructor to the course data
+      data.instructor = _id;
+  
+      // Validate the category and sub-category
+      const { category, subCategory } = req.body;
+      if (subCategory && !category) {
+        return next(new Error("If you choose a sub-category, you must also select a main category"));
+      }
+      if (category) {
+        if (!subCategory) {
+          return next(new Error("If you provide a main category, you must also provide a sub-category"));
+        }
+        let categoryGet = await categoryModel.findOne({ _id: category });
+        if (!categoryGet) {
+          return next(new Error("The category does not exist. You can add it first or it might have been deleted"));
+        }
+        let flag = false;
+        let subCategoryName = "";
+        categoryGet.subCategory.forEach((ele) => {
+          if (ele.subCategoryId.toString() === subCategory.toString()) {
+            flag = true;
+            subCategoryName = ele.subCategoryName;
+          }
+        });
+        if (!flag) {
+          return next(new Error("This sub-category does not exist in the selected category"));
+        }
+        data.subCategory = { subCategoryId: subCategory, subCategory: subCategoryName };
+      }
+  
+      // Add the course to the database
+      await courseModel.create(data);
+  
+      // Return success response
+      return res.json({ success: true, message: "The course has been added successfully" });
+    } catch (err) {
+      return next(err);
     }
-}
-}
-// check on the whatWillYouLearn:
-let {whatWillYouLearn}=data;
-whatWillYouLearn=JSON.parse(whatWillYouLearn);
-if(!whatWillYouLearn||whatWillYouLearn.length<=0)
-{
-    return next(new Error("you must add what the objectives of the course"));
-}
-else
-{
-    // make the loop on this and make all those:
-    whatWillYouLearn.forEach((ele)=>
-    {
-        const objectObjective={};
-        objectObjective.id=nanoid(8);
-        objectObjective.objective=ele;
-       arrayObjectOfObjectives.push(objectObjective);
-    });
-    // check on this now:
-       data.whatWillYouLearn=arrayObjectOfObjectives;
-}
-// add the instructor:
-data.instructor=_id;
-// check on the catgeoiry and subCtgeory:
-const {category,subCategory}=req.body;
-// chekc on the catgeory and check on the subCatgeory:
-if(subCategory&&!category)
-{
-    return next(new Error("if you are choose a subCatgeory you must select the catgeory of this category also"));
-}
-if(category)
-{
-   if(!subCategory)
-   {
-    return next(new Error("if you send the catgeory of the course you must also add subCategory"));
-   }
-   // check the catgeory if it exists or not and check on the subCategory:
-   let categoryGet=await categoryModel.findOne({_id:category});
-   if(!categoryGet)
-   {
-    return next(new Error("the category is not exists you can add it first or it may be deleted"));
-   }
-   // check on the subCategoryId:
-   let flag=false;
-   let subCategoryName="";
-   categoryGet.subCategory.forEach((ele)=>
-   {
-       if(ele.subCategoryId.toString()==subCategory.toString())
-       {
-        flag=true;
-         subCategoryName=ele.subCategoryName;
-       }
-   });
-   if(!flag)
-   {
-    return next(new Error("this subCategory is not exists on the selected category"));
-   }
-   // make the object fro the subcatgeory:
-   data.subCategory={subCategoryId:subCategory,subCategory:subCategoryName};
-}
-// make the  dcoument of the cousre now:
-await courseModel.create(data);
-// retur the resposne:
-return res.json({success:true,message:"the course is added sucessfully"});
-}
-catch(err)
-{
-    return next(err);
-}
-}
+  };
 // update course data:
 export const updateSpCourse=async (req,res,next)=>
 {
@@ -653,6 +592,92 @@ else
         return next(new Error("if you want to add the New category you also shiuld add subCategory also and the subCategory should matched with the new Category"));
     }
 }
+// check on the what will you learn:
+let  whatWillYouLearn=req.body.whatWillYouLearn;
+console.log(whatWillYouLearn);
+// Check if whatWillYouLearn is a string, then parse it
+if (typeof whatWillYouLearn === 'string') {
+  
+        whatWillYouLearn=JSON.parse(whatWillYouLearn);
+        console.log(whatWillYouLearn);    
+}
+else
+{
+    return next(new Error("Invalid JSON format in whatWillYouLearn"));
+}
+// check on the what will you learn:
+if(whatWillYouLearn)
+{
+    // check on th update and delete and other:
+    let variableNew=req.query.whatWillYouLearn;
+    if(!variableNew)
+    {
+        return next(new Error("if  you want to make anychange on the objectives you must send the whatWillYouLearn on the query with add/update/delete"));
+    }
+    // check on the values:
+    if(variableNew=="add")
+    {
+        let arrayWhatWillYouAdd=[...course.whatWillYouLearn];
+        whatWillYouLearn.forEach((ele)=>
+        {
+            let objectAdd={};
+            objectAdd.id=nanoid(8);
+            objectAdd.objective=ele;
+            arrayWhatWillYouAdd.push(objectAdd);
+        });
+        dataUPdate.whatWillYouLearn=arrayWhatWillYouAdd;
+    }
+    else if(variableNew=="delete")
+    {
+        // mae the code of delete algorithm:
+        for(let i=0;i<whatWillYouLearn.length;i++)
+        {
+            // loop on each element and do this:
+            const eleFound=await courseModel.findOneAndUpdate({_id:courseId,'whatWillYouLearn.id':whatWillYouLearn[i]},{$pull:{whatWillYouLearn:{id:whatWillYouLearn[i]}}});
+            if(!eleFound)
+            {
+                return next(new Error("the id of what will you learn is not exists check the id and try again"));
+            }
+        }
+        // delete the element of the what will you learn;
+        delete dataUPdate.whatWillYouLearn;
+    }
+    else if(variableNew=="update")
+    {
+        
+        // make the code algorithm and do this:
+        const fun=checkOnCourseUpdateSchema(checkOnTheWahtWillYouLearnUpdate,whatWillYouLearn);
+        const result=fun(req,res,next);
+        if(result)
+        {
+            // make the code:
+            console.log(whatWillYouLearn);
+            if(whatWillYouLearn.id.length!=whatWillYouLearn.objective.length)
+            {
+                return next(new Error("the length of the id must be the same length of the objectives"));
+            }
+            for(let i=0;i<whatWillYouLearn.id.length;i++)
+            {
+                console.log(whatWillYouLearn.id[i]);
+                console.log("yes i enter this");
+                let getObjective=await courseModel.findOneAndUpdate({_id:courseId,'whatWillYouLearn.id':whatWillYouLearn.id[i]},{$set:{'whatWillYouLearn.$.objective':whatWillYouLearn.objective[i]}});
+                if(!getObjective)
+                {
+                    return next(new Error("the id of the objective is not exists check the id adn try again"));
+                }
+            }
+            delete dataUPdate.whatWillYouLearn;
+        }
+        else
+        {
+            console.log("this is an error in the whatWillYouLearn of updating");
+        }
+    }
+    else
+    {
+        return next(new Error("the value of the whatWillYouLearn ont he query must be one of (add,update,delete)"));
+    }
+}
 // update:
 const newCourse=await courseModel.findOneAndUpdate({_id:courseId},dataUPdate,{new:true});
 // return the response with the updted data:
@@ -660,6 +685,7 @@ return res.json({success:true,message:"the course is updated sucessfully",course
 }
 catch(err)
 {
+    console.log(err);
     return next(err);
 }
 }

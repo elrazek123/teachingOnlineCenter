@@ -42,7 +42,7 @@ export const getCourses=joi.object(
 courseName:joi.string().min(1).allow(""),
 courseHours:joi.string().min(1).allow(''),
 coursePrice:joi.string().min(1).allow(''),
-instructor:joi.string().min(6).allow(''),
+instructor:joi.string().min(1).allow(''),
 teachedBy:joi.string().min(1).allow(''),
 category:joi.string().min(5).allow(''),
 subCategory:joi.string().min(5).allow(''),

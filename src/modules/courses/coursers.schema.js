@@ -61,3 +61,8 @@ courseName:joi.string().min(1).allow(''),
 coursePrice:joi.string().min(1).allow(''),
 category:joi.string().min(6).allow(''),
 }).required();
+export const checkOnTheWahtWillYouLearnUpdate=joi.object(
+{
+id:joi.array().items(joi.string().min(5).required()).min(1).required(),
+objective:joi.array().items(joi.string().min(1).required()).min(1).required(),
+}).required();
