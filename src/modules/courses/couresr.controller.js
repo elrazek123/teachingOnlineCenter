@@ -4,7 +4,6 @@ import courseModel from "../../../db/models/courses/courses.model.js";
 import {addAccessBySchema, checkOnTheWahtWillYouLearnUpdate, updateCccesspibeBySchemaDelete, updateCccesspibeBySchemaUpdate} from './coursers.schema.js';
 import checkOnCourseUpdateSchema from "../../utils/checkOnCourseUpdate.js";
 import categoryModel from "../../../db/models/catgeory/catagory.model.js";
-import { json } from "express";
 // add course comtroller:
 export const addCourse = async (req, res, next) => {
     try {
@@ -52,6 +51,7 @@ export const addCourse = async (req, res, next) => {
       // Handle accessible by anyone data
       let { accesibleByAnyOne } = data;
       accesibleByAnyOne = JSON.parse(accesibleByAnyOne);
+      
       if (accesibleByAnyOne && (accesibleByAnyOne.videoUrl || accesibleByAnyOne.describtion)) {
         if ((accesibleByAnyOne.videoUrl && accesibleByAnyOne.videoUrl.length <= 0) || !accesibleByAnyOne.describtion) {
           delete data.accesibleByAnyOne;
@@ -61,7 +61,8 @@ export const addCourse = async (req, res, next) => {
               const objectUrl = { urlId: nanoid(8), url: ele };
               objectUrlArray.push(objectUrl);
             });
-            data.accesibleByAnyOne.videoUrl = objectUrlArray;
+            data.accesibleByAnyOne={};
+            data.accesibleByAnyOne.videoUrl=objectUrlArray;
           }
           if (accesibleByAnyOne.describtion) {
             if (accesibleByAnyOne.describtion.length !== (accesibleByAnyOne.videoUrl ? accesibleByAnyOne.videoUrl.length : 0)) {
@@ -594,7 +595,11 @@ else
 }
 // check on the what will you learn:
 let  whatWillYouLearn=req.body.whatWillYouLearn;
-console.log(whatWillYouLearn);
+
+// check on the what will you learn:
+if(whatWillYouLearn)
+{
+    console.log(whatWillYouLearn);
 // Check if whatWillYouLearn is a string, then parse it
 if (typeof whatWillYouLearn === 'string') {
   
@@ -605,9 +610,6 @@ else
 {
     return next(new Error("Invalid JSON format in whatWillYouLearn"));
 }
-// check on the what will you learn:
-if(whatWillYouLearn)
-{
     // check on th update and delete and other:
     let variableNew=req.query.whatWillYouLearn;
     if(!variableNew)

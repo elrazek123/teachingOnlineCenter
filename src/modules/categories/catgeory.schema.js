@@ -32,11 +32,13 @@ export const filterCatgeiry=joi.object(
 categoryName:joi.string().valid("categoryName").allow(""),
 craatedAt:joi.string().valid("createdAt").allow(''),
 }).required();
+
 export const getFIlterSubCategory=joi.object(
 {
     categoryName:joi.string().min(1).allow(''),
     categoryId:joi.string().min(5).allow(''),
 }).required();
+
 export const getCourses=joi.object(
 {
 courseName:joi.string().min(1).allow(""),
@@ -46,4 +48,11 @@ instructor:joi.string().min(1).allow(''),
 teachedBy:joi.string().min(1).allow(''),
 category:joi.string().min(5).allow(''),
 subCategory:joi.string().min(5).allow(''),
+id:joi.string().min(5).allow(''),
+}).required();
+
+export const getInstrcuctorsSchema=joi.object(
+{
+instructorName:joi.string().min(1).allow(''),
+instrcuctorId:joi.string().min(5).allow(''),
 }).required();

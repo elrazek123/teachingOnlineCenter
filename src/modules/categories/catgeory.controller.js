@@ -4,6 +4,7 @@ import categoryModel from "../../../db/models/catgeory/catagory.model.js";
 import checkOnCourseUpdateSchema from "../../utils/checkOnCourseUpdate.js";
 import { addingSUbCategotySchema, deleteSubCategorySchema, updateSubCategorySchema } from "./catgeory.schema.js";
 import courseModel from "../../../db/models/courses/courses.model.js";
+import employeeModel from "../../../db/models/employees/meployees.model.js";
 
 export const addCatgeoryController=async (req,res,next)=>
 {
@@ -15,8 +16,9 @@ export const addCatgeoryController=async (req,res,next)=>
         // egt the data:
         const data=req.body;
         // chekc on the file of it uploaded or not:
-        if(req.files&&req.files.length>1)
+        if(req.files&&req.files.length>0)
         {
+            console.log("yes i enter");
               // check thta if the uoads bigger than 1:
               if(req.files.length>1)
                {
@@ -28,6 +30,7 @@ export const addCatgeoryController=async (req,res,next)=>
             objectPhoto.public_id=uplaodingFIle.public_id;
             objectPhoto.secure_url=uplaodingFIle.secure_url;
             data.categoryPicture=objectPhoto;
+            console.log("yes it's changed");
         }
         // check on the subCtgeory:
         let  {subCategory}=data;
@@ -431,6 +434,8 @@ export const getCourses=async (req,res,next)=>
             objectFilter.teachedBy=data.teachedBy;
         if(data.category)
             objectFilter.category=data.category;
+        if(data.id)
+            objectFilter._id=data.id;
         // check on the oject filter for this:
         if(Object.keys(objectFilter).length>0)
         {
@@ -473,5 +478,52 @@ export const getCourses=async (req,res,next)=>
     {
         return next(err);
     }
+}
+// get all instrcuctros with filetr:
+export const getInstrcuctors=async (req,res,next)=>
+{
+try
+{
+// get the dta from the query:
+const data=req.query;
+// get the dafault:
+let instrcuctors=[];
+instrcuctors=await employeeModel.find({$or:[{role:"instructor"},{role:"superAdmin"}]}).populate([{path:"courses",populate:[{path:"instructor"},{path:"category"}]}]).sort("name");
+// chekc  on the data:
+if(Object.keys(data).length==0)
+{
+    instrcuctors=await employeeModel.find({$or:[{role:"instructor"},{role:"superAdmin"}]}).populate([{path:"courses",populate:[{path:"instructor"},{path:"category"}]}]).sort("name");
+    return res.json({success:true,instrcuctors,numberInstrcuctors:instrcuctors.length});
+}
+// check on the keys of the iject if ot have value or not:
+let mapObject=new Map(Object.entries(data));
+let flagExists=false;
+mapObject.forEach((value,key)=>
+{
+    if(value)
+    {
+        flagExists=true;
+    }
+});
+if(!flagExists)
+{
+    instrcuctors=await employeeModel.find().populate([{path:"courses",populate:[{path:"instructor"},{path:"category"}]}]).sort("name");
+    return res.json({success:true,instrcuctors,numberInstrcuctors:instrcuctors.length});
+}
+// make the object filter:
+let objectFilter={};
+if(data.instructorName)
+    objectFilter.name={$regex:data.instructorName,$options:"i"};
+if(data.instrcuctorId)
+    objectFilter._id=data.instrcuctorId;
+
+instrcuctors=await employeeModel.find({$or:[{role:"instructor"},{role:"superAdmin"}],...objectFilter}).populate([{path:"courses",populate:[{path:"instructor"},{path:"category"}]}]).sort("name");
+// return the response:
+return res.json({success:true,instrcuctors,numberInstrcuctors:instrcuctors.length});
+}
+catch(err)
+{
+    return next(err);
+}
 }
 //////////////// 

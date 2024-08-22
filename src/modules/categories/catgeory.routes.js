@@ -18,7 +18,9 @@ categoryRouter.get("/getCategories",validation.queryValidation(categorySchema.ge
 // get the subCategory of sp catgeory:
 categoryRouter.get("/getSubCategory",validation.queryValidation(categorySchema.getFIlterSubCategory),categoryController.getSubCatgeories);
 // get the courses with all filters options:
-categoryRouter.get("/getAllCoursesWithAllFiltsersOptions",validation.queryValidation(categorySchema.getCourses),categoryController.getCourses)
+categoryRouter.get("/getAllCoursesWithAllFiltsersOptions",validation.queryValidation(categorySchema.getCourses),categoryController.getCourses);
+// get all the instructor:
+categoryRouter.get("/getAllInstrcuctor",validation.queryValidation(categorySchema.getInstrcuctorsSchema),categoryController.getInstrcuctors)
 
 
 export default categoryRouter;

@@ -144,5 +144,7 @@ loggedForAccepted:
 }
 ,{timestamps:true,toObject:{virtuals:true},toJSON:{virtuals:true},strictQuery:true});
 employeeSchema.plugin(uniqueValidator,{message:(props)=>`${props.value} is already exists please change it and try again`});
+// make the virtual populate with the populate:
+employeeSchema.virtual("courses",{localField:"_id",foreignField:"instructor",ref:"course"});
 const employeeModel=mongoose.model("employee",employeeSchema);
 export default employeeModel;

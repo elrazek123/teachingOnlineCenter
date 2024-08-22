@@ -62,7 +62,7 @@ subCategory:
 {
     type:{subCategoryId:{type:String,min:5,required:true},subCategory:{type:String,required:true}},
     required:false,
-}
+},
 },{timestamps:true,toObject:{virtuals:true},toJSON:{virtuals:true},strictQuery:true});
 const courseModel=mongoose.model("course",coursesSchema);
 export default courseModel;

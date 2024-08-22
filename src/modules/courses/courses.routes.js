@@ -6,7 +6,10 @@ import checkInstrcutroOrnNot from "./checkIfInstructorOrNot.js";
 import uploadingFileRequets from "../../utils/uploadingFiles.js";
 import * as validation from '../../validation/validation.js';
 import authentecationEmployee from './../../auth/employee.auth.js';
+import sectionRouter from "../sections/sections.routes.js";
 const courseRouter=Router({mergeParams:true});
+// go to the sections routes:
+courseRouter.use("/sections",sectionRouter);
 // courses api's:
 // stage 1:
 // add course:
