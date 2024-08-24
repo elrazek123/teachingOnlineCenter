@@ -35,8 +35,8 @@ accesibleByAnyOne:
 {
     type:
     {
-        videoUrl:{type:[{type:{urlId:{type:String,required:true},url:{type:String,required:true}},required:false}],required:false},
-        describtion:{type:[{describtionId:{type:String,required:true},describtionContent:{type:String,required:true}}],required:false}
+        videoUrl:{type:[{type:{urlId:{type:String,required:true},url:{type:String,required:true}},required:false}],required:true},
+        describtion:{type:[{describtionId:{type:String,required:true},describtionContent:{type:String,required:true}}],required:true}
     },
     required:false,
 },

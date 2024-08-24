@@ -51,30 +51,33 @@ export const addCourse = async (req, res, next) => {
       // Handle accessible by anyone data
       let { accesibleByAnyOne } = data;
       accesibleByAnyOne = JSON.parse(accesibleByAnyOne);
-      
-      if (accesibleByAnyOne && (accesibleByAnyOne.videoUrl || accesibleByAnyOne.describtion)) {
-        if ((accesibleByAnyOne.videoUrl && accesibleByAnyOne.videoUrl.length <= 0) || !accesibleByAnyOne.describtion) {
-          delete data.accesibleByAnyOne;
-        } else {
+      console.log(accesibleByAnyOne);
+      console.log(accesibleByAnyOne.description);
+      console.log(accesibleByAnyOne.videoUrl);
+      if (accesibleByAnyOne && (accesibleByAnyOne.videoUrl || accesibleByAnyOne.description)) {
+          
           if (accesibleByAnyOne.videoUrl) {
             accesibleByAnyOne.videoUrl.forEach((ele) => {
               const objectUrl = { urlId: nanoid(8), url: ele };
               objectUrlArray.push(objectUrl);
             });
-            data.accesibleByAnyOne={};
-            data.accesibleByAnyOne.videoUrl=objectUrlArray;
+            
           }
-          if (accesibleByAnyOne.describtion) {
-            if (accesibleByAnyOne.describtion.length !== (accesibleByAnyOne.videoUrl ? accesibleByAnyOne.videoUrl.length : 0)) {
+          if (accesibleByAnyOne.description) {
+            if (accesibleByAnyOne.description.length !== (accesibleByAnyOne.videoUrl ? accesibleByAnyOne.videoUrl.length : 0)) {
               return next(new Error("Validation error: you must provide a description for each video URL"));
             }
-            accesibleByAnyOne.describtion.forEach((ele) => {
+            accesibleByAnyOne.description.forEach((ele) => {
               const objectDescribtion = { describtionId: nanoid(8), describtionContent: ele };
               arrayDescribtionContent.push(objectDescribtion);
             });
-            data.accesibleByAnyOne.describtion = arrayDescribtionContent;
+            console.log("enter");
+            console.log(data.accesibleByAnyOne);
+            data.accesibleByAnyOne=JSON.parse(data.accesibleByAnyOne);
+            data.accesibleByAnyOne={videoUrl:objectUrlArray,describtion:arrayDescribtionContent};
+            console.log(data.accesibleByAnyOne);
           }
-        }
+        
       }
   
       // Validate what will be learned
@@ -227,19 +230,21 @@ if(coursePrice)
 }
 // check on the on the ohter:
 let {accesibleByAnyOne}=req.body;
-
+console.log(req.body);
 if(accesibleByAnyOne&&Object.keys(accesibleByAnyOne).length>0)
 {
     
     let query=req.query.accesibleByAnyOne;
+    console.log(query);
     if(!query)
     {
         return next(new Error("you must send the accesibleByAnyOne in the query when you want to make any modification on the accesibleByAnyOne field"));
     }
     else if(query=="update")
     {
+        let  flagVideoUpdated=false;
         accesibleByAnyOne=JSON.parse(accesibleByAnyOne);
-
+console.log("i enter here in update");
         if(!course.accesibleByAnyOne)
             {
                 return next(new Error("the course not have the field to update it"));
@@ -254,12 +259,17 @@ if(accesibleByAnyOne&&Object.keys(accesibleByAnyOne).length>0)
        {
         return next(new Error("the accesibleByAnyOne value must be valid"));
        }
-       if(accesibleByAnyOne.videoUrl)
+       if(!accesibleByAnyOne.videoUrl.urlId&&!accesibleByAnyOne.describtion.describtionId)
+       {
+        return next(new Error("if you want to update the accessibleBy you should send either the describtionId or urlId to make the update well"))
+       }
+       if(accesibleByAnyOne.videoUrl&&accesibleByAnyOne.videoUrl.urlId)
        {
           // make the code on this:
           const {videoUrl}=accesibleByAnyOne;
           // check on the urlId first:
           let flagVideo=false;
+          
           let indexArray="";
 
           course.accesibleByAnyOne.videoUrl.forEach((ele,index)=>
@@ -274,12 +284,14 @@ if(accesibleByAnyOne&&Object.keys(accesibleByAnyOne).length>0)
         {
             return next(new Error("the id of the url of the video not exists"));
         }
-        let arrayNew=[...course.accesibleByAnyOne.videoUrl];
+        var arrayNew=[...course.accesibleByAnyOne.videoUrl];
         arrayNew[indexArray]={urlId:videoUrl.urlId,url:videoUrl.url};
         dataUPdate.accesibleByAnyOne={videoUrl:arrayNew};
+        console.log(dataUPdate.accesibleByAnyOne);
+        flagVideoUpdated=true;
         dataUPdate.accesibleByAnyOne.describtion=course.accesibleByAnyOne.describtion;
        }
-       if(accesibleByAnyOne.describtion)
+       if(accesibleByAnyOne.describtion&&accesibleByAnyOne.describtion.describtionId)
        {
          // maek the code on this:
          if(Object.keys(accesibleByAnyOne.describtion).length<=0)
@@ -314,7 +326,30 @@ if(accesibleByAnyOne&&Object.keys(accesibleByAnyOne).length>0)
         }
         let newArray=[...course.accesibleByAnyOne.describtion];
         newArray[indexDes]={describtionId:describtionId,describtionContent:describtionContent};
-        dataUPdate.accesibleByAnyOne.describtion=newArray;
+        if(typeof dataUPdate.accesibleByAnyOne=="object")
+        {
+            dataUPdate.accesibleByAnyOne.describtion=newArray;
+            // false:
+            if(!flagVideoUpdated)
+            {
+              // we should add the video:
+              dataUPdate.accesibleByAnyOne.videoUrl=course.accesibleByAnyOne.videoUrl;
+            }
+            // true:
+            console.log(dataUPdate.accesibleByAnyOne);
+        }
+        else
+        {
+            dataUPdate.accesibleByAnyOne={};
+            if(!flagVideoUpdated)
+                {
+                  // we should add the video:
+                  dataUPdate.accesibleByAnyOne.videoUrl=course.accesibleByAnyOne.videoUrl;
+                }
+            dataUPdate.accesibleByAnyOne.describtion=newArray;
+
+        }
+        console.log("yes ist's done yes",dataUPdate)
        }
       }
       else
@@ -335,6 +370,10 @@ if(accesibleByAnyOne&&Object.keys(accesibleByAnyOne).length>0)
         newVar=JSON.parse(req.body.accesibleByAnyOne);
         // check on it:
         console.log(newVar);
+        if(!newVar.urlId&&!newVar.describtionId)
+        {
+            return next(new Error("the only must be one send in the request either describtionId or urlId"))
+        }
         const resultFunction=checkOnCourseUpdateSchema(updateCccesspibeBySchemaDelete,newVar);
         const resy=resultFunction(req,res,next);
         if(resy)
@@ -410,12 +449,14 @@ if(accesibleByAnyOne&&Object.keys(accesibleByAnyOne).length>0)
         // check on the vaidation:
         let newVar=req.body.accesibleByAnyOne;
         newVar=JSON.parse(newVar);
+        console.log(newVar);
         const validaton=checkOnCourseUpdateSchema(addAccessBySchema,newVar);
         const get=validaton(req,res,next);
         if(get)
         {
            // checke now on the two:
            const {videoUrl,describtion}=newVar;
+           console.log(newVar);
            if(videoUrl.length!=describtion.length)
             {
                 return next(new Error("you must add a describtion for each video url and opposite"));
@@ -632,17 +673,30 @@ else
     else if(variableNew=="delete")
     {
         // mae the code of delete algorithm:
-        for(let i=0;i<whatWillYouLearn.length;i++)
+        let arrayNow=[...course.whatWillYouLearn];
+       for(let i=0;i<whatWillYouLearn.length;i++)
+       {
+        // loop on the arrayELments:
+        let flag=false;
+        for(let j=0;j<arrayNow.length;j++)
         {
-            // loop on each element and do this:
-            const eleFound=await courseModel.findOneAndUpdate({_id:courseId,'whatWillYouLearn.id':whatWillYouLearn[i]},{$pull:{whatWillYouLearn:{id:whatWillYouLearn[i]}}});
-            if(!eleFound)
+            let {id}=arrayNow[j];
+            if(id.toString()==whatWillYouLearn[i])
             {
-                return next(new Error("the id of what will you learn is not exists check the id and try again"));
+                flag=true;
+                arrayNow.splice(j,1);
             }
         }
+        if(!flag)
+        {
+            return next(new Error("the id of the objective is not exists please check the id and try aagain"));
+        }
+
+       }
+
         // delete the element of the what will you learn;
-        delete dataUPdate.whatWillYouLearn;
+        dataUPdate.whatWillYouLearn=[];
+        dataUPdate.whatWillYouLearn=arrayNow;
     }
     else if(variableNew=="update")
     {

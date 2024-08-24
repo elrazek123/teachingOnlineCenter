@@ -20,7 +20,9 @@ categoryRouter.get("/getSubCategory",validation.queryValidation(categorySchema.g
 // get the courses with all filters options:
 categoryRouter.get("/getAllCoursesWithAllFiltsersOptions",validation.queryValidation(categorySchema.getCourses),categoryController.getCourses);
 // get all the instructor:
-categoryRouter.get("/getAllInstrcuctor",validation.queryValidation(categorySchema.getInstrcuctorsSchema),categoryController.getInstrcuctors)
+categoryRouter.get("/getAllInstrcuctor",validation.queryValidation(categorySchema.getInstrcuctorsSchema),categoryController.getInstrcuctors);
+// get one course with the id only:
+categoryRouter.get("/getOnlyOneCourse/:courseId",validation.paramsValidation(categorySchema.getOInlyOneCOurse),categoryController.getOnlyOneCourse)
 
 
 export default categoryRouter;

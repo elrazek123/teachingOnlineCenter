@@ -56,3 +56,7 @@ export const getInstrcuctorsSchema=joi.object(
 instructorName:joi.string().min(1).allow(''),
 instrcuctorId:joi.string().min(5).allow(''),
 }).required();
+export const getOInlyOneCOurse=joi.object(
+{
+courseId:joi.string().min(5).required(),
+}).required();

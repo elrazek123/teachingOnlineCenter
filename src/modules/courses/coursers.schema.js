@@ -36,19 +36,19 @@ categoryDelete:joi.string().valid("delete").allow(''),
 export const updateCccesspibeBySchemaUpdate=joi.object(
 {
 videoUrl:joi.object({
-  urlId:joi.string().required(),
-  url:joi.string().required(),
+  urlId:joi.string().allow('').required(),
+  url:joi.string().allow('').required(),
 }),
 describtion:joi.object(
 {
-  describtionId:joi.string().required(),
-  describtionContent:joi.string().required(),
+  describtionId:joi.string().allow('').required(),
+  describtionContent:joi.string().allow('').required(),
 }),
 }).required();
 export const updateCccesspibeBySchemaDelete=joi.object(
 {
-  urlId:joi.string().min(4),
-  describtionId:joi.string().min(4),
+  urlId:joi.string().min(4).allow(''),
+  describtionId:joi.string().min(4).allow(''),
 }).required();
 export const addAccessBySchema=joi.object(
 {

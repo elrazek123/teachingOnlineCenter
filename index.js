@@ -17,6 +17,7 @@ app.use("/employees",empRouter);
 // catgeor routes:
 app.use("/categories",categoryRouter);
 
+
 // not found page api:
 app.all("*",(req,res,next)=>{
     return res.json({

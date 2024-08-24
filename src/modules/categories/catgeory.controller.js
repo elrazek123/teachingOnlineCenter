@@ -526,4 +526,23 @@ catch(err)
     return next(err);
 }
 }
+// get only one course:
+export const getOnlyOneCourse=async (req,res,next)=>
+{
+    try
+    {
+        // egt the catgeory d:
+        const {courseId}=req.params;
+        const getCourse=await courseModel.findOne({_id:courseId}).populate([{path:"instructor"},{path:"category"}]);
+        if(!getCourse)
+        {
+            return next(new Error("The cousre isnnot exists check the id or it may be deleted"));
+        }
+        return res.json({success:true,course:getCourse});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
 //////////////// 
