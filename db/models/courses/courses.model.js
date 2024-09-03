@@ -9,6 +9,7 @@ courseName:
 courseHours:
 {
     type:String,
+    required:false,
 },
 courseDescription:
 {
@@ -64,5 +65,6 @@ subCategory:
     required:false,
 },
 },{timestamps:true,toObject:{virtuals:true},toJSON:{virtuals:true},strictQuery:true});
+coursesSchema.virtual("sections",{localField:"_id",foreignField:"course",ref:"section"});
 const courseModel=mongoose.model("course",coursesSchema);
 export default courseModel;

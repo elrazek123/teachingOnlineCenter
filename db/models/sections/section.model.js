@@ -19,9 +19,10 @@ sectionDescribtion:
 
 sectionHours:
 {
-    type:Number,
+    type:String,
     min:1,
     max:1000000,
+    required:false,
 },
 
 course:
@@ -34,10 +35,9 @@ course:
 objectiveFromSection:
 {
     type:[{objectiveId:{type:String,min:5,max:10,required:true},objective:{type:String,required:true,min:1,max:150}}],
-    default:[],
+    required:true,
 },
 },{timestamps:true,toObject:{virtuals:true},toJSON:{virtuals:true},strictQuery:true});
-
+sectionSchema.virtual("lessons",{localField:"_id",foreignField:"section",ref:"lesson"});
 const sectionModel=mongoose.model("section",sectionSchema);
-
 export default sectionModel;

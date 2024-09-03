@@ -2,11 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import connectToDb from './db/connection.js';
 import empRouter from './src/modules/employees/employees.routes.js';
-import uploadingFileRequets from './src/utils/uploadingFiles.js';
 import schedule from 'node-schedule';
 import employeeModel from './db/models/employees/meployees.model.js';
 import sendingEmail from './src/utils/sendEmail.js';
 import categoryRouter from './src/modules/categories/catgeory.routes.js';
+import calculateTotalTime from './src/utils/fucntion.time.js';
 const app=express();
 app.use(express.json());
 app.use(cors());
@@ -16,6 +16,7 @@ await connectToDb();
 app.use("/employees",empRouter);
 // catgeor routes:
 app.use("/categories",categoryRouter);
+
 
 
 // not found page api:
@@ -34,6 +35,7 @@ app.use((err,req,res,next)=>{
         stack:err.stack,
     })
 });
+
 // schdeduling job:
 schedule.scheduleJob("0 0 12 * * 5",async (req,res,next)=>
 {
@@ -109,3 +111,6 @@ catch(err)
 })
 // connect to the server port:
 app.listen(3000,()=>{console.log("the server is conncted sucessfully on the port ",3000)});
+
+
+

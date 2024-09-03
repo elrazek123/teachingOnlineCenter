@@ -27,3 +27,15 @@ objective:joi.string().valid("add","update","delete"),
 export const addObjectiveAdd=joi.array().items(joi.string().min(1).max(150).required()).min(1).required();
 export const addObjectiveDelete=joi.array().items(joi.string().min(5).max(10).required()).required();
 export const addObjectiveUpdate=joi.array().items(joi.object({id:joi.string().min(5).max(10).required(),newObjective:joi.string().min(1).max(150).required()}).required()).required();
+
+export const getSecionsWithAllFiltersOptions=joi.object(
+{
+    sectionName:joi.string().min(1).allow(''),
+    sectionId:joi.string().min(5).allow(''),
+}).required();
+
+// check the id of the course:
+export const courseCheck=joi.object(
+{
+    courseId:joi.string().min(5).required(),
+}).required();

@@ -20,6 +20,6 @@ courseRouter.patch("/updateCourse/:courseId",authentecationEmployee,authorizatio
 courseRouter.delete("/deleteCourse/:courseId",authentecationEmployee,authorizationEmpoyee("instructor","superAdmin"),validation.paramsValidation(courseSchema.checkCourse),courseController.deleteCourse);
 // get the courses of the instuctor:
 courseRouter.get("/getMyCourses",authentecationEmployee,authorizationEmpoyee("superAdmin","instructor"),validation.bodyValidation(courseSchema.getCoursesForSpIns),courseController.getInsCourses);
-// and make the changes about the updating of what is the free and aslo:
-
+// egt course plan with sections and with lesosns:
+courseRouter.get("/getCoursePlan/:courseId",validation.paramsValidation(courseSchema.checkCourse),courseController.getPlan)
 export default courseRouter;

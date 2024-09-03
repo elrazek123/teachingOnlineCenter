@@ -12,7 +12,7 @@ const {_id}=req.data;
 const getSection=await sectionModel.findOne({_id:sectionId}).populate([{path:"course"}]);
 if(!getSection)
 {
-    return next(new Error("the section is not exists the id is nort correct or this section can be deleted"));
+    return next(new Error("the section is not exists the id is not correct or this section can be deleted"));
 }
 // check on the owner and check on the course:
 if(getSection.course.instructor.toString()!=_id.toString())

@@ -1,56 +1,67 @@
-import { required } from "joi";
 import mongoose,{Schema, Types} from "mongoose";
-const lessonsSchema=new Schema(
+const lessonSchema=new Schema(
 {
 lessonName:
 {
     type:String,
-    required:[true,"the lesson name is required"],
+    required:true,
     min:2,
-    max:300,
+    max:200,
 },
 lessonDescribtion:
 {
     type:String,
-    required:[true,"the lesson Describtion is required"],
-    min:5,
-    max:1200,
+    required:true,
+    min:2,
+    max:300,
 },
-test:
+whatWillYouLeanAfterThisLesson:
+{
+    type:String,
+    required:true,
+    min:2,
+    max:300,
+},
+
+course:
 {
     type:Types.ObjectId,
-    ref:"test",
-},
-
-pdf:
-{
-    type:
-    {
-        public_id:{type:String,required:true,},
-        secure_url:{type:String,required:true},
-    },
-    default:null,
-    required:false,
-},
-
-videoLinks:
-{
-    type:[{type:{videoUrl:{type:String,required:true,unique:true,min:5,max:150},videoId:{type:String,required:true,unique:true,min:1,max:10}}}],
-    default:[],
-    required:false,
-},
-
-ObjectivesFromLesson:
-{
-    type:[{objectiveId:{type:String,required:true,min:1,max:10},objective:{type:String,required:true,min:1,max:200}}],
-    default:[],
-    required:false,
+    ref:"course",
+    required:true,
 },
 
 section:
 {
     type:Types.ObjectId,
     ref:"section",
-    required:[true,"the section of lesson is required"],
-}
+    required:true,
+},
+
+videos:
+{
+type:[{videoUrl:{type:String,required:true,min:2,max:250},videoId:{type:String,required:true,min:5,max:10}}],
+required:false,
+},
+
+pdfs:
+{
+type:[{public_id:{type:String},secure_url:{type:String},UploadedId:{type:String,min:5,max:10},uploadText:{type:String,min:2,max:300}}],
+default:[],
+},
+
+otherRequiredLinks:
+{
+type:[{link:{type:String,min:5,max:200},Describtion:{type:String,min:2,max:300},linkId:{type:String,min:5,max:10}}],
+default:[],
+},
+
+timeOfLesson:
+{
+    type:String,
+    required:true,
+},
 },{timestamps:true,toObject:{virtuals:true},toJSON:{virtuals:true},strictQuery:true});
+
+const lessonModel=mongoose.model("lesson",lessonSchema);
+
+export default lessonModel;

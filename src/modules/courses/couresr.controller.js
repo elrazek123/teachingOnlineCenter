@@ -4,6 +4,8 @@ import courseModel from "../../../db/models/courses/courses.model.js";
 import {addAccessBySchema, checkOnTheWahtWillYouLearnUpdate, updateCccesspibeBySchemaDelete, updateCccesspibeBySchemaUpdate} from './coursers.schema.js';
 import checkOnCourseUpdateSchema from "../../utils/checkOnCourseUpdate.js";
 import categoryModel from "../../../db/models/catgeory/catagory.model.js";
+import sectionModel from "../../../db/models/sections/section.model.js";
+import lessonModel from "../../../db/models/lessons/lessons.model.js";
 // add course comtroller:
 export const addCourse = async (req, res, next) => {
     try {
@@ -765,6 +767,10 @@ export const deleteCourse=async (req,res,next)=>
             return next(new Error("sorry you can't delete this course because you are not the owner of it"));
         }
         await course.deleteOne();
+        // delet all the sections tht assinged to this course:
+        await sectionModel.deleteMany({course:courseId});
+        // delet all these lesson that assigned to this course:
+        await lessonModel.deleteMany({course:courseId});
         const deletd=await courseModel.find({instructor:_id}).populate([{path:"instructor"},{path:'category'}]).sort("-createdAt");
         // RETUR THE RESPOSNE:
         return res.json({success:true,message:"the course is deleted sucessfully",courses:deletd});
@@ -821,6 +827,26 @@ catch(err)
 {
     return next(err);
 }
+}
+// get course plan:
+export const getPlan=async (req,res,next)=>
+{
+    try
+    {
+        // egt the id of the course:
+        const {courseId}=req.params;
+        const course=await courseModel.findOne({_id:courseId}).populate([{path:"instructor"},{path:"category"},{path:"sections",populate:[{path:"lessons"}]}]);
+        if(!course)
+        {
+            return next(new Error("the course is not exist scheck the id or it may be deleted"));
+        }
+        // return the resposne:
+        return res.json({success:true,course});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
 }
 //get details of sp course:
 //////////////////////

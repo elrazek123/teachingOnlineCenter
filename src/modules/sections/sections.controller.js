@@ -3,6 +3,7 @@ import courseModel from "../../../db/models/courses/courses.model.js";
 import sectionModel from "../../../db/models/sections/section.model.js";
 import checkOnCourseUpdateSchema from "../../utils/checkOnCourseUpdate.js";
 import { addObjectiveAdd, addObjectiveDelete, addObjectiveUpdate } from "./sections.schema.js";
+import lessonModel from "../../../db/models/lessons/lessons.model.js";
 
 // add section controller:
 export const addSection=async (req,res,next)=>
@@ -46,7 +47,7 @@ export const addSection=async (req,res,next)=>
         // make the section document:
         await sectionModel.create(data);
         // get all the sections of the course:
-        const allSections=await sectionModel.find({course:course});
+        const allSections=await sectionModel.find({course:course}).sort("createdAt");
         // return the response:
         return res.json({success:true,message:"the section is added sucessfully",courseSections:allSections});
     }
@@ -94,7 +95,7 @@ export const updateSection=async (req,res,next)=>
                const {objective}=req.query;
                if(!objective)
                {
-                return next(new Error("the objective must be sedn in the query required"));
+                return next(new Error("the objective must be send in the query required"));
                }
                if(objective=="add")
                {
@@ -177,5 +178,82 @@ export const updateSection=async (req,res,next)=>
     }
 }
 // delete sections:
-
-// get all the sections with all updates:
+export const deleteSection=async (req,res,next)=>
+{
+try
+{
+// get the id of the section:
+const {sectionId}=req.params;
+// delete it:
+await sectionModel.deleteOne({_id:sectionId});
+// delete all the lessons that assigned to this section:
+await lessonModel.deleteMany({section:sectionId});
+// get ll the sections:
+const sections=await sectionModel.find().sort("createdAt");
+// retrunt he response:
+return res.json({success:true,message:"the sections with his lessons is deleted sucessfully",sections});
+}
+catch(err)
+{
+    return next(err);
+}
+}
+// get all the sections with all filters(name),(hours),(courseId),id of the sections(with no lessons)/ and with lessons if you want:
+export const getSections=async (req,res,next)=>
+{
+    try
+    {
+        //egtt he id og the section:
+        const {courseId}=req.params;
+        // cchekc ont it:
+        const course=await courseModel.findOne({_id:courseId});
+        if(!course)
+        {
+            return next(new Error("the course is not exists it may be deletd check the id and try again"));
+        }
+        let sections=[];
+        // get the data of the filter:
+        const data=req.query;
+        // check if it empty:
+        if(Object.keys(data).length==0)
+        {
+            // make tghe dafult:
+            sections=await sectionModel.find({course:courseId}).populate([{path:"course"},{path:"lessons"}]).sort("createdAt");
+            // return the response:
+            return res.json({success:true,sections,sectionsNumbers:sections.length});
+        }
+        // chekc if the fierlds are empty:
+        const mapObject=new Map(Object.entries(data));
+        let flag=false;
+        mapObject.forEach((value,key)=>
+        {
+            if(value)
+            {
+                flag=true;
+            }
+        });
+        if(!flag)
+        {
+            // make the dafulst:
+                        // make tghe dafult:
+                        sections=await sectionModel.find({course:courseId}).populate([{path:"course"},{path:"lessons"}]).sort("createdAt");
+                        // return the response:
+                        return res.json({success:true,sections,sectionsNumbers:sections.length});
+        }
+        // cehck now on tyhe object:
+        let objectFilter={}
+        if(data.sectionName)
+        {
+            objectFilter.sectionName={$regex:data.sectionName,$options:"i"};
+        }
+        if(data.sectionId)
+            objectFilter._id=data.sectionId;
+        // retur the response:
+        sections=await sectionModel.find({course:courseId,...objectFilter}).populate([{path:"course"},{path:"lessons"}]).sort("createdAt");
+        return res.json({success:true,sections,sectionsNumbers:sections.length});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}

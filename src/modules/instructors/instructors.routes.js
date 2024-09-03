@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { application, Router } from "express";
 import * as validation from '../../validation/validation.js';
 import * as insController from './instructor.controller.js';
 import * as insSchema from './instructor.schema.js';
@@ -6,6 +6,7 @@ import uploadingFileRequets from "../../utils/uploadingFiles.js";
 import authentecationEmployee from './../../auth/employee.auth.js';
 import authorizationEmpoyee from "../../authorization/employee.authorization.js";
 import courseRouter from "../courses/courses.routes.js";
+import lessonRouter from "../lessons/lesson.routes.js";
 const instRouter=Router({mergeParams:true });
 // cousrers routes:
 instRouter.use("/courses",courseRouter);
