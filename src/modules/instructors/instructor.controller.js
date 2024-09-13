@@ -203,3 +203,24 @@ export const deleteAccount=async (req,res,next)=>
         return next(err);
     }
 }
+// get specefiec instructor for the user:
+export const getSpInsToUser=async (req,res,next)=>
+{
+    try
+    {
+        // get the id of the ins:
+        const {insId}=req.params;
+        // get the instrcutor:
+        const ins=await employeeModel.findOne({_id:insId}).populate([{path:"courses",populate:[{path:"sections"}]}]);
+        if(!ins)
+        {
+            return next(new Error("there is no instrcutor by this course exists check the id of the instrcutor and try again"));
+        }
+        // return the resposne:
+        return res.json({success:true,instructor:ins});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}

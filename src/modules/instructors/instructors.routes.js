@@ -19,5 +19,6 @@ instRouter.delete("/insRequet",authentecationEmployee,insController.deleteRequet
 instRouter.get("/getRequestResult",authentecationEmployee,authorizationEmpoyee("instructor"),insController.getInsReqRes);
 // delete the account:
 instRouter.delete("/deleteMyAccount",authentecationEmployee,authorizationEmpoyee("instructor"),insController.deleteAccount)
-
+// get sp ins:
+instRouter.get("/getSpInsAboutSpCourse/:insId",validation.paramsValidation(insSchema.checkIdOfIns),insController.getSpInsToUser);
 export default instRouter;

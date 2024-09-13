@@ -342,6 +342,7 @@ try
     let objectFilter={};
     let results=[];
     let flag=false;
+    let subCategoriesCheck=[];
     console.log(data);
     if(Object.keys(data).length==0)
     {
@@ -370,10 +371,34 @@ try
         objectFilter.categoryName={$regex:data.categoryName,$options:"i"};
     if(req.query.categoryId)
         objectFilter._id=data.categoryId;
-    if(Object.keys(objectFilter).length>0)
+    if(Object.keys(objectFilter).length>0||req.query.subCategoryName)
     {
        results=await categoryModel.find(objectFilter).select("_id subCategory categoryName");
-       return res.json({success:true,results});
+       if(req.query.subCategoryName)
+       {
+        console.log("yes i enetr the name of subcaategory")
+        // check on the result to get all the subCategories only loop on the array and check:
+        results.forEach((ele,index)=>
+        {
+            const {subCategory}=ele;
+            subCategory.forEach((ele2,index2)=>
+            {
+                console.log(ele2)
+                if(ele2.subCategoryName.includes(req.query.subCategoryName)||ele2.subCategoryName.startsWith(req.query.subCategoryName))
+                {
+                    subCategoriesCheck.push(ele2);
+                }
+            })
+        });
+       }
+       if(subCategoriesCheck.length>0||req.query.subCategoryName)
+       {
+        return res.json({success:true,results:subCategoriesCheck});
+       }
+       else
+       {
+        return res.json({success:true,results});
+       }
     }
     else
     {

@@ -37,6 +37,7 @@ export const getFIlterSubCategory=joi.object(
 {
     categoryName:joi.string().min(1).allow(''),
     categoryId:joi.string().min(5).allow(''),
+    subCategoryName:joi.string().min(1).allow(''),
 }).required();
 
 export const getCourses=joi.object(

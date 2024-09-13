@@ -6,6 +6,7 @@ import checkOnCourseUpdateSchema from "../../utils/checkOnCourseUpdate.js";
 import categoryModel from "../../../db/models/catgeory/catagory.model.js";
 import sectionModel from "../../../db/models/sections/section.model.js";
 import lessonModel from "../../../db/models/lessons/lessons.model.js";
+import userModel from "../../../db/models/users/users.model.js";
 // add course comtroller:
 export const addCourse = async (req, res, next) => {
     try {
@@ -772,6 +773,10 @@ export const deleteCourse=async (req,res,next)=>
         // delet all these lesson that assigned to this course:
         await lessonModel.deleteMany({course:courseId});
         const deletd=await courseModel.find({instructor:_id}).populate([{path:"instructor"},{path:'category'}]).sort("-createdAt");
+        // delet the course from likes and cart from the user:
+        await userModel.updateMany({cart:{$in:courseId}},{$pull:{cart:courseId}});
+        // likes = also:
+        await userModel.updateMany({likes:{$in:courseId}},{$pull:{likes:courseId}});
         // RETUR THE RESPOSNE:
         return res.json({success:true,message:"the course is deleted sucessfully",courses:deletd});
     }

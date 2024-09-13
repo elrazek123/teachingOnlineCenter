@@ -57,7 +57,6 @@ export const deleteVideo=joi.array().items(joi.string().min(5).max(10).required(
 export const updateVieo=joi.array().items(joi.object({
     id:joi.string().min(5).max(10).required(),
     url:joi.string().min(5).max(220).required(),
-    
 }).required()).min(0).required();
 // make the add schema for otherRequiredlinks:
 export const addRequiredLinks=joi.array().items(joi.object(

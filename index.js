@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { urlencoded } from 'express';
 import cors from 'cors';
 import connectToDb from './db/connection.js';
 import empRouter from './src/modules/employees/employees.routes.js';
@@ -7,6 +7,7 @@ import employeeModel from './db/models/employees/meployees.model.js';
 import sendingEmail from './src/utils/sendEmail.js';
 import categoryRouter from './src/modules/categories/catgeory.routes.js';
 import calculateTotalTime from './src/utils/fucntion.time.js';
+import userRouter from './src/modules/users/users.routes.js';
 const app=express();
 app.use(express.json());
 app.use(cors());
@@ -16,7 +17,8 @@ await connectToDb();
 app.use("/employees",empRouter);
 // catgeor routes:
 app.use("/categories",categoryRouter);
-
+// users routes:
+app.use("/users",userRouter);
 
 
 // not found page api:
@@ -111,6 +113,3 @@ catch(err)
 })
 // connect to the server port:
 app.listen(3000,()=>{console.log("the server is conncted sucessfully on the port ",3000)});
-
-
-
