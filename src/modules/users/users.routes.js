@@ -31,5 +31,9 @@ userRouter.patch("/updateUserCart/:courseId",authUser,validatin.paramsValidation
 // egt all waht the user likes:
 userRouter.get("/getLikesCourses",authUser,userController.getLikesCourses)
 // add or delet from likes courses:
-userRouter.get("/handleLikes/:courseId",authUser,validatin.paramsValidation(userSchema.checkCourse),userController.handleLikes)
+userRouter.get("/handleLikes/:courseId",authUser,validatin.paramsValidation(userSchema.checkCourse),userController.handleLikes);
+// make sp for likes:
+userRouter.patch("/LikesForWhoJoinNow",authUser,validatin.bodyValidation(userSchema.handleLikesFOrNowWhoIsLogIn),userController.handleLikesLogNow);
+// handle the new user of cart:
+userRouter.patch("/handleUsersLogInNowForChart",authUser,validatin.bodyValidation(userSchema.handleLikesFOrNowWhoIsLogIn),userController.handleNewUserCart)
 export default userRouter;

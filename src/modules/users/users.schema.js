@@ -51,3 +51,8 @@ export const checkCourse=joi.object(
 {
     courseId:joi.string().min(5).required(),
 }).required();
+
+export const handleLikesFOrNowWhoIsLogIn=joi.object(
+{
+cousresIds:joi.array().items(joi.string().min(5).max(30).required(),).min(0).required(),
+}).required();

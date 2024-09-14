@@ -625,4 +625,126 @@ export const handleLikes = async (req, res, next) => {
         return next(err);
     }
 };
+// handle likes fot he first time or who is login now:
+export const handleLikesLogNow=async (req,res,next)=>
+    {
+        try
+        {
+            // get the id of the user:
+            const {_id}=req.data;
+            // get the id's of courses:
+            const userNow=await userModel.findOne({_id});
+            const {cousresIds}=req.body;
+            if(!userNow)
+            {
+                return next(new Error("the user is not exist check the id and try again"));
+            }
+            // check on the length of the courses id's:
+            if(cousresIds.length<=0)
+            {
+                return res.json({
+                    success:true,
+                    message:"the cousres is handled successfully",
+                    user:userNow,
+                    numberInLikes:userNow.likes.length,
+                });
+            }
+            // check on the courses fro all courses if it exist or not:
+            let flagOfExistence=true;
+            for(let i=0;i<cousresIds.length;i++)
+            {
+                const course=await courseModel.findOne({_id:cousresIds[i]});
+                if(!course)
+                {
+                    flagOfExistence=false;
+                    break;
+                }
+            }
+            if(!flagOfExistence)
+            {
+                return next(new Error("check the id's of the courses you are added"));
+            }
+            // mke the code and check:
+            const {likes}=userNow;
+            let getItNew=[...likes];
+            cousresIds.forEach((ele)=>
+            {
+                if(likes.includes(ele))
+                {
+                    console.log("it's already exists");
+                }
+                else
+                {
+                    // add it to the arrau:
+                    getItNew.push(ele);
+                }
+            });
+            // make th equery:
+            const getNewUser=await userModel.findOneAndUpdate({_id},{likes:getItNew},{new:true});
+            // returtn the resposne:
+            return res.json({success:true,message:"the courses is added sucessfully to the likes lists",user:getNewUser, numberInLikes:getNewUser.likes.length});
+        }
+        catch(err)
+        {
+            return next(err);
+        }
+    }
+// handel the carts fro the new login user:
+export const handleNewUserCart=async (req,res,next)=>
+{
+    try
+    {
+        const {_id}=req.data;
+        // get the cart also:
+        const user=await userModel.findOne({_id});
+        if(!user)
+        {
+            return next(new Error("the user is not exists now"));
+        }
+        // get the courses id's:
+        const {cousresIds}=req.body;
+        // cehck on the length:
+        if(cousresIds.length<=0)
+        {
+            return res.json({success:true,message:"the courses is added successfully to the user cart",user:user,numberCart:user.likes.length});
+        }
+        // hcke on the existence if the of the id's of courses:
+        let flagExists=true;
+        for(let i=0;i<cousresIds.length;i++)
+        {
+            const course=await courseModel.findOne({_id:cousresIds[i]});
+            if(!course)
+            {
+                flagExists=false;
+                break;
+            }
+        }
+        if(!flagExists)
+        {
+            return next(new Error("check the course id's first"));
+        }
+        // get the cart only:
+        const {cart}=user;
+        let cartUpdated=[...cart];
+        cousresIds.forEach((ele)=>
+        {
+            if(cart.includes(ele))
+            {
+                console.log("we will not add it");
+            }
+            else
+            {
+                cartUpdated.push(ele);
+            }
+        });
+        // maek the query:
+        const newUserGet=await userModel.findOneAndUpdate({_id},{cart:cartUpdated},{new:true}).populate([{path:"likes"},{path:"cart"}]);
+        // retur the response:
+        return res.json({success:true,message:"the courses is added successfully to the user cart",user:newUserGet,numberCart:newUserGet.cart.length});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+} 
 //////////////////////////////////////////////////

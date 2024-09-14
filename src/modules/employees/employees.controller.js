@@ -2133,5 +2133,24 @@ return res.json({success:true,message:"the employee is deleted sucessfully"});
         return next(err);
     }
 }
+// get the employee profiel:
+export const getEmpProfile=async (req,res,next)=>
+{
+    try
+    {
+        // get the id of the user:
+        const user=await employeeModel.findOne({_id:req.data._id});
+        if(!user)
+        {
+            return next(new Error("the user is not exists or the accouent is deleted"));
+        }
+        // returnt eh resposne:
+        return res.json({success:true,user});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
 // after reject the request make the the user can make another request:
 // we should mke the modification in the adding logic that okay:

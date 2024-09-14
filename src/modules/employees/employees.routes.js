@@ -47,5 +47,6 @@ empRouter.patch("/updateEmployeeStopState/:empId",authentecationEmployee,authori
 // get the persons or superdmins data who are stop employee or do any thing:
 empRouter.get("/getSuperAdminsDataWhoAreStopEmployee",empController.getDataOfIStoppedBYOrState);
 // delete the employee by the superAdmin:
-empRouter.delete("/deleteEmployeeBySuperAdmin/:empId",authentecationEmployee,authorizationEmpoyee("superAdmin"),validation.paramsValidation(empSchema.checkEmployee),empController.deleteEmployeeBySuperAdmin)
+empRouter.delete("/deleteEmployeeBySuperAdmin/:empId",authentecationEmployee,authorizationEmpoyee("superAdmin"),validation.paramsValidation(empSchema.checkEmployee),empController.deleteEmployeeBySuperAdmin);
+empRouter.get("/getProfileOfEmployee",authentecationEmployee,empController.getEmpProfile)
 export default empRouter;
