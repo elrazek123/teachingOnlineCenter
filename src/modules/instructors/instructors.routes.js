@@ -21,4 +21,10 @@ instRouter.get("/getRequestResult",authentecationEmployee,authorizationEmpoyee("
 instRouter.delete("/deleteMyAccount",authentecationEmployee,authorizationEmpoyee("instructor"),insController.deleteAccount)
 // get sp ins:
 instRouter.get("/getSpInsAboutSpCourse/:insId",validation.paramsValidation(insSchema.checkIdOfIns),insController.getSpInsToUser);
+// get the requests to the instructors only to specefiec instrcutors:
+instRouter.get("/getAllRequetsToBuyCourse",authentecationEmployee,authorizationEmpoyee("instructor","superAdmin"),validation.bodyValidation(insSchema.getRequetsToJoinCoursesSchema),insController.getRequetsOfJoinCourses)
+// evaluate an sp requets fron the studensts:
+instRouter.patch("/evaluateRequestOfStudent/:requestId",authentecationEmployee,authorizationEmpoyee("instructor","superAdmin"),validation.paramsValidation(insSchema.checkRequestId),validation.bodyValidation(insSchema.evaluateRequestOfStudent),insController.evaluateRequetsForJoin)
+// get information about the numbers of students in sp course and all the courses the ins have:
+
 export default instRouter;

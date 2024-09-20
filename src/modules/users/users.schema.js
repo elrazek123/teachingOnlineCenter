@@ -5,7 +5,7 @@ export const signUpSchema=joi.object(
 userName:joi.string().min(2).max(300).required(),
 userEmail:joi.string().email().required(),
 password:joi.string().min(8).max(20).required(),
-rePassowrd:joi.string().valid(joi.ref("password")).required(),
+rePassword:joi.string().valid(joi.ref("password")).required(),
 userAge:joi.string().regex(/^[1-9]{1}[0-9]{1}$/).required(),
 phoneNumber:joi.string().regex(/^(010|011|012|015)[0-9]{8,9}$/).required(),
 }).required();
@@ -34,7 +34,7 @@ export const getCodeFOrStageTwoSchema=joi.object(
 
 export const updateUserSchema=joi.object(
 {
-email:joi.string().email(),
+userEmail:joi.string().email(),
 phoneNumber:joi.string().regex(/^(010|011|015|012)[0-9]{8,9}$/),
 userAge:joi.string().regex(/^[1-9][0-9]{1}$/),
 oldPass:joi.string(),
@@ -54,5 +54,5 @@ export const checkCourse=joi.object(
 
 export const handleLikesFOrNowWhoIsLogIn=joi.object(
 {
-cousresIds:joi.array().items(joi.string().min(5).max(30).required(),).min(0).required(),
+cousresIds:joi.array().items(joi.string().min(5).max(30),).min(0).required(),
 }).required();

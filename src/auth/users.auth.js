@@ -17,13 +17,15 @@ if(!token.startsWith("ahmed__"))
 // split the token and get the okne only:
 const tokenOnly=token.split("__")[1];
 // chec on the token if it exists:
-const getToken=await userTokenModel.findOne({token:tokenOnly}).populate("user");
+const getToken=await userTokenModel.findOne({userToken:tokenOnly}).populate([{path:"user"}]);
+console.log(getToken);
 if(!getToken)
 {
     return next(new Error("the token is not exists"));
 }
 // check on the activation:
 const {user}=getToken;
+console.log(user);
 if(Object.keys(user).length<1)
 {
 return next(new Error("the user account is not exists or the account may deleted"));

@@ -14,7 +14,7 @@ user:
     ref:"user",
     required:true,
 },
-isValaid:
+isValid:
 {
     type:Boolean,
     default:true,

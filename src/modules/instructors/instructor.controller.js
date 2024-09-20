@@ -3,6 +3,9 @@ import { nanoid } from "nanoid";
 import bcryptjs from 'bcryptjs';
 import sendingEmail from "../../utils/sendEmail.js";
 import employeeModel from "../../../db/models/employees/meployees.model.js";
+import subscribersModel from "../../../db/models/subscribers/subscribers.model.js";
+import getRequetsToMakeNotSeenState from "../../utils/makeNotSeenForRequets.fun.js";
+import participntsModel from "../../../db/models/participnts/partcipints.model.js";
 export const addRequet=async (req,res,next)=>
 {
     try
@@ -218,6 +221,339 @@ export const getSpInsToUser=async (req,res,next)=>
         }
         // return the resposne:
         return res.json({success:true,instructor:ins});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+// get all the instcruyors requests of students to buy the course:
+export const getRequetsOfJoinCourses=async (req,res,next)=>
+{
+    try
+    {
+        // get the id of the user:
+        const {_id}=req.data;
+        let requests=[];
+        // check on the id of the course if it exists:
+        const data=req.body;
+        // get all the the courses these instructor study:
+        const getCourses=await employeeModel.findOne({_id}).populate([{path:"courses"}]);
+        // get courses:
+        const {courses}=getCourses;
+        let ids=[];
+        // get all the ids of courses:
+        courses.forEach((ele,index)=>
+        {
+            const {_id}=ele;
+            ids.push(_id);
+        });
+        // chekc on if the data of filtering it empty or not:
+        if(Object.keys(data).length<=0)
+        {
+        // make the query to get the courses and make this:
+        requests=await subscribersModel.find({courseId:{$in:ids}}).populate([{path:"subscribeId"},{path:"courseId"}]).sort("cretedAt");
+        await getRequetsToMakeNotSeenState(requests,next);
+        //return the response:
+        return res.json({success:true,requests,numberRequets:requests.length});
+        }
+        // chekc now on the vaue of the keys it it exists also:
+        const newMap=new Map(Object.entries(data));
+        let flag=false;
+        newMap.forEach((value,key)=>
+        {
+            if(value)
+                flag=true;
+        });
+        if(!flag)
+        {
+                    // make the query to get the courses and make this:
+        requests=await subscribersModel.find({courseId:{$in:ids}}).populate([{path:"subscribeId"},{path:"courseId"}]).sort("cretedAt");
+       await getRequetsToMakeNotSeenState(requests,next);
+        //return the response:
+        return res.json({success:true,requests,numberRequets:requests.length});
+        }
+        // make an the object of the filter and make the filtering now:
+        let objectFilter={};
+        if(data.courseId)
+            objectFilter.courseId=data.courseId;
+        if(data.state)
+            objectFilter.state=data.state;
+        if(data.userId)
+            objectFilter.subscribeId=req.body.userId;
+        if(objectFilter.courseId)
+        {
+        // make the query to get the courses and make this:
+        requests=await subscribersModel.find({...objectFilter}).populate([{path:"subscribeId"},{path:"courseId"}]).sort("cretedAt");
+        if(data.userName)
+        {
+            // make the logic for the user name query also:
+            let newArr=[];
+            requests.forEach((ele,index)=>
+            {
+                if(ele.userName.includes(data.userName))
+                {
+                    newArr.push(ele);
+                }
+            });
+           await getRequetsToMakeNotSeenState(newArr,next);
+           // return  the response:
+           return res.json({success:true,requests:newArr,numberRequets:newArr.length})   
+        }
+       await getRequetsToMakeNotSeenState(requests,next);
+        //return the response:
+        return res.json({success:true,requests,numberRequets:requests.length});
+        }
+        else
+        {
+        // make the query to get the courses and make this:
+        requests=await subscribersModel.find({courseId:{$in:ids},...objectFilter}).populate([{path:"subscribeId"},{path:"courseId"}]).sort("cretedAt");
+        if(data.userName)
+            {
+                // make the logic for the user name query also:
+                let newArr=[];
+                requests.forEach((ele,index)=>
+                {
+                    if(ele.userName.includes(data.userName))
+                    {
+                        newArr.push(ele);
+                    }
+                });
+               await getRequetsToMakeNotSeenState(newArr,next);
+               // return  the response:
+               return res.json({success:true,requests:newArr,numberRequets:newArr.length})   
+            }
+        await getRequetsToMakeNotSeenState(requests,next);
+        //return the response:
+        return res.json({success:true,requests,numberRequets:requests.length});
+        }
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+//evaluate an specefiec requests:
+export const evaluateRequetsForJoin=async (req,res,next)=>
+{
+    try
+    {
+        // get the id of instrcutor:
+        const {_id}=req.data;
+        // get the id requests:
+        const {requestId}=req.params;
+        // chekc on the requests if it exists:
+        const request=await subscribersModel.findOne({_id:requestId}).populate([{path:"subscribeId"},{path:"courseId",populate:[{path:"instructor"}]}]);
+        if(!request)
+        {
+            return next(new Error("the request you want to evaluate it not exists chekc the id or it may deleted"));
+        }
+        // check on the course related to this instructor or not:
+        const {instructor}=request.courseId;
+        if(_id.toString()!=instructor._id.toString())
+        {
+            return next(new Error("yiu are not the owner of the course to evaluet this request"));
+        }
+        // update the stete:
+        const {state}=req.body;
+        if(state==request.state)
+            return next(new Error("the request is already in this state"));
+        let getRes="";
+        if(state=="payed")
+        {
+            // make the logic:
+            getRes=await subscribersModel.findOneAndUpdate({_id:requestId},{state:state},{new:true}).populate([{path:"subscribeId"},{path:"courseId",populate:[{path:"instructor"}]}])
+            await participntsModel.create({user:request.subscribeId._id,course:request.courseId._id});
+            // send the  email to the user:
+            const sendingEmailOne=await sendingEmail({to:request.subscribeId.userEmail,subject:"EdumatekPrime joinCourse",html:`
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td style="padding: 20px 0 30px 0;">
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #002147; background-color: #ffffff;">
+                <!-- شعار المنصة -->
+                <tr>
+                    <td align="center" style="padding: 20px; background-color: #002147;">
+                        <img src="https://res.cloudinary.com/dzqvcewvy/image/upload/v1725979834/uploads/teachingOnlineCenter/employees/omer%20Khalid%20kamal/courses/lessonsPdfs/chrb49reacg08m87a0am.jpg" alt="Edumatek Prime Logo" style="border-radius: 50%; width: 100px; height: 100px;">
+                    </td>
+                </tr>
+                <!-- رسالة الانضمام -->
+                <tr>
+                    <td align="center" bgcolor="#002147" style="padding: 40px 0 30px 0; color: #ffffff; font-size: 28px; font-weight: bold; font-family: Arial, sans-serif;">
+                        Course Enrollment Status
+                    </td>
+                </tr>
+                <!-- محتوى البريد -->
+                <tr>
+                    <td bgcolor="#ffffff" style="padding: 40px 30px 40px 30px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td style="color: #002147; font-family: Arial, sans-serif; font-size: 24px;">
+                                    <b>Hello, ${request.subscribeId.userName}!</b>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 20px 0 30px 0; color: #002147; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;">
+                                    Based on the instructor's evaluation, your request to join the course has been reviewed.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 20px 0;">
+                                    <div style="background-color: #FF8C00; color: white; padding: 15px; font-size: 20px; font-weight: bolder; border-radius: 5px;">
+                                        ${state} <!-- يمكن أن يكون "Approved" أو "Declined" -->
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- رابط للتفاصيل -->
+                            <tr>
+                                <td style="padding: 20px 0; font-family: Arial, sans-serif; font-size: 16px; color: #002147;">
+                                    For more details about your enrollment status, please visit the link below:
+                                    <br><br>
+                                    <a href="http://localhost:5173/course-status" style="color: #FF8C00; text-decoration: none; font-weight: bold;">
+                                        http://localhost:5173/course-status
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- رقم المدرس للتواصل -->
+                            <tr>
+                                <td style="padding: 30px 0 0 0; color: #002147; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;">
+                                    If you have any issues or questions, please feel free to contact the instructor directly at:
+                                    <br><br>
+                                    <b>Instructor Phone: ${instructor.phone}</b> <!-- رقم المدرس -->
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 30px 0 0 0; color: #002147; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;">
+                                    If you did not request to join this course, please ignore this email.
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <!-- تذييل البريد -->
+                <tr>
+                    <td bgcolor="#002147" style="padding: 30px 30px 30px 30px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td style="color: #ffffff; font-family: Arial, sans-serif; font-size: 14px;">
+                                    &reg; Edumatek Prime 2024<br/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+                `});
+                if(!sendingEmailOne)
+                {
+                    return next(new Error("the email is not sending or the internet connection is not stable"));
+                }
+            // retur the resposne:
+            return res.json({success:true,message:"the request state is updated sucessfully",request:getRes});
+        }
+        else
+        {
+            // make the logic:
+            getRes=await subscribersModel.findOneAndUpdate({_id:requestId},{state},{new:true});
+            // check i gthe user is exists in the participnts and delete it:
+            const getResFromPart=await participntsModel.findOne({user:request.subscribeId._id,course:request.courseId._id});
+            if(getResFromPart)
+            {
+                await getResFromPart.deleteOne();
+            }
+            // send the email:
+            const sendingEmailOne=await sendingEmail({to:request.subscribeId.userEmail,subject:"EdumatekPrime joinCourse",html:`
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td style="padding: 20px 0 30px 0;">
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #002147; background-color: #ffffff;">
+                <!-- شعار المنصة -->
+                <tr>
+                    <td align="center" style="padding: 20px; background-color: #002147;">
+                        <img src="https://res.cloudinary.com/dzqvcewvy/image/upload/v1725979834/uploads/teachingOnlineCenter/employees/omer%20Khalid%20kamal/courses/lessonsPdfs/chrb49reacg08m87a0am.jpg" alt="Edumatek Prime Logo" style="border-radius: 50%; width: 100px; height: 100px;">
+                    </td>
+                </tr>
+                <!-- رسالة الانضمام -->
+                <tr>
+                    <td align="center" bgcolor="#002147" style="padding: 40px 0 30px 0; color: #ffffff; font-size: 28px; font-weight: bold; font-family: Arial, sans-serif;">
+                        Course Enrollment Status
+                    </td>
+                </tr>
+                <!-- محتوى البريد -->
+                <tr>
+                    <td bgcolor="#ffffff" style="padding: 40px 30px 40px 30px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td style="color: #002147; font-family: Arial, sans-serif; font-size: 24px;">
+                                    <b>Hello, ${request.subscribeId.userName}!</b>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 20px 0 30px 0; color: #002147; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;">
+                                    Based on the instructor's evaluation, your request to join the course has been reviewed.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 20px 0;">
+                                    <div style="background-color: #FF8C00; color: white; padding: 15px; font-size: 20px; font-weight: bolder; border-radius: 5px;">
+                                        ${state} <!-- يمكن أن يكون "Approved" أو "Declined" -->
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- رابط للتفاصيل -->
+                            <tr>
+                                <td style="padding: 20px 0; font-family: Arial, sans-serif; font-size: 16px; color: #002147;">
+                                    For more details about your enrollment status, please visit the link below:
+                                    <br><br>
+                                    <a href="http://localhost:5173/course-status" style="color: #FF8C00; text-decoration: none; font-weight: bold;">
+                                        http://localhost:5173/course-status
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- رقم المدرس للتواصل -->
+                            <tr>
+                                <td style="padding: 30px 0 0 0; color: #002147; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;">
+                                    If you have any issues or questions, please feel free to contact the instructor directly at:
+                                    <br><br>
+                                    <b>Instructor Phone: ${instructor.phone}</b> <!-- رقم المدرس -->
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 30px 0 0 0; color: #002147; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;">
+                                    If you did not request to join this course, please ignore this email.
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <!-- تذييل البريد -->
+                <tr>
+                    <td bgcolor="#002147" style="padding: 30px 30px 30px 30px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td style="color: #ffffff; font-family: Arial, sans-serif; font-size: 14px;">
+                                    &reg; Edumatek Prime 2024<br/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+                `});
+                if(!sendingEmailOne)
+                {
+                    return next(new Error("the email is not sending or the internet connection is not stable"));
+                }
+            // retur the resposne:
+            return res.json({success:true,message:"the request state is updated sucessfully",request:getRes});
+        }
     }
     catch(err)
     {

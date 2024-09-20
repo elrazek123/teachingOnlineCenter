@@ -43,7 +43,7 @@ export const signUpController=async (req,res,next)=>
         // mek the user ont he collection:
         await userModel.create(data);
         //sending email:
-        const sendingEmailOne=await sendingEmail({to:user.userEmail,subject:"Email Activation for Edumatec Prime Academy",html:`
+        const sendingEmailOne=await sendingEmail({to:data.userEmail,subject:"Email Activation for Edumatec Prime Academy",html:`
 <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
     <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 10px; overflow: hidden;">
         <tr>
@@ -137,6 +137,11 @@ try
     if(!user)
     {
         return next(new Error("the user email os not exists chech the email and try again"));
+    }
+    // chekc ont he activatiron also:
+    if(!user.isActivated)
+    {
+        return next(new Error("the user must activate his account first then login"));
     }
     // check on the pass:
     const result=bcryptjs.compareSync(password,user.password);
@@ -335,17 +340,17 @@ export const updateUserData=async (req,res,next)=>
         data.password=bcryptjs.hashSync(password,8);
     }
     // check on the email:
-    const {email}=data;
-    if(email)
+    const {userEmail}=data;
+    if(userEmail)
     {
-        if(email==user.email)
+        if(userEmail==user.userEmail)
         {
             return next(new Error("the must enter an different email from your email now"));
         }
         // you must active the isActivated to false:
         data.isActivated=false;
         // send an email to be able to activate his email again:
-        const sendingEmailNow=await sendingEmail({to:email,subject:"Email Activation for Edumatec Prime Academy",html:`<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+        const sendingEmailNow=await sendingEmail({to:userEmail,subject:"Email Activation for Edumatec Prime Academy",html:`<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
     <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 10px; overflow: hidden;">
         <tr>
             <td align="center" bgcolor="#00264d" style="padding: 30px 0;">
@@ -359,7 +364,7 @@ export const updateUserData=async (req,res,next)=>
                 <p style="font-size: 18px; color: #333333; line-height: 1.6; margin-bottom: 30px;">
                     Thank you for signing up on our platform! To activate your account and start learning, please click the button below.
                 </p>
-                <a href="http://localhost:3000/users/activateEmail/${email}" style="background-color: #ff6600; color: #ffffff; padding: 15px 25px; text-decoration: none; font-size: 18px; border-radius: 5px;">
+                <a href="http://localhost:3000/users/activateEmail/${userEmail}" style="background-color: #ff6600; color: #ffffff; padding: 15px 25px; text-decoration: none; font-size: 18px; border-radius: 5px;">
                     Activate Your Account
                 </a>
             </td>
@@ -483,8 +488,11 @@ export const logOut=async (req,res,next)=>
     {
         // get the id of the user:
         const {_id}=req.data;
+        console.log(_id);
         const {token}=req.headers;
-        await userTokenModel.updateOne({user:_id,token},{isValaid:false});
+        console.log(token);
+        const getToken=await userTokenModel.findOneAndUpdate({user:_id,userToken:token.split("__")[1]},{isValid:false},{new:true});
+console.log(getToken);
         // return the response:
         return res.json({
             success:true,
@@ -634,7 +642,10 @@ export const handleLikesLogNow=async (req,res,next)=>
             const {_id}=req.data;
             // get the id's of courses:
             const userNow=await userModel.findOne({_id});
-            const {cousresIds}=req.body;
+            let {cousresIds}=req.body;
+            cousresIds=new Set(cousresIds);
+            cousresIds=Array.from(cousresIds);
+            console.log(cousresIds);
             if(!userNow)
             {
                 return next(new Error("the user is not exist check the id and try again"));
@@ -702,7 +713,10 @@ export const handleNewUserCart=async (req,res,next)=>
             return next(new Error("the user is not exists now"));
         }
         // get the courses id's:
-        const {cousresIds}=req.body;
+        let {cousresIds}=req.body;
+        cousresIds=new Set(cousresIds);
+            cousresIds=Array.from(cousresIds);
+            console.log(cousresIds);
         // cehck on the length:
         if(cousresIds.length<=0)
         {

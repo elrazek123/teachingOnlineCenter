@@ -4,9 +4,12 @@ import * as userController from './users.controller.js';
 import * as userSchema from './users.schema.js';
 import uploadingFileRequets from "../../utils/uploadingFiles.js";
 import authUser from "../../auth/users.auth.js";
+import subscribersRoutes from "../subscribers/subScribers.routes.js";
 const userRouter=Router({mergeParams:true});
 // we will ake the user routers:
-// sign up with google:
+//go tot he routes of subscribers:
+userRouter.use("/subscriber",subscribersRoutes)
+// sign up
 userRouter.post("/signUpForusers",uploadingFileRequets().any(),validatin.bodyValidation(userSchema.signUpSchema),userController.signUpController);
 // activte email:
 userRouter.get("/activateEmail/:userEmail",validatin.paramsValidation(userSchema.activeteEmailSchema),userController.activateEMailForUsers);
@@ -35,5 +38,8 @@ userRouter.get("/handleLikes/:courseId",authUser,validatin.paramsValidation(user
 // make sp for likes:
 userRouter.patch("/LikesForWhoJoinNow",authUser,validatin.bodyValidation(userSchema.handleLikesFOrNowWhoIsLogIn),userController.handleLikesLogNow);
 // handle the new user of cart:
-userRouter.patch("/handleUsersLogInNowForChart",authUser,validatin.bodyValidation(userSchema.handleLikesFOrNowWhoIsLogIn),userController.handleNewUserCart)
+userRouter.patch("/handleUsersLogInNowForChart",authUser,validatin.bodyValidation(userSchema.handleLikesFOrNowWhoIsLogIn),userController.handleNewUserCart);
+// get my courses lists that i can watch:
+
+// watch any video fro  the course you are partcipnts to:
 export default userRouter;

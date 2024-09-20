@@ -16,3 +16,24 @@ export const checkIdOfIns=joi.object(
 {
     insId:joi.string().min(5).max(50).required(),
 }).required();
+
+
+export const getRequetsToJoinCoursesSchema=joi.object(
+{
+courseId:joi.string().min(5).max(30).allow(''),
+state:joi.string().valid('notSeenYet','noActionTaken','paused','payed','notPayed','rejectedRequest').allow(''),
+userId:joi.string().min(5).max(30).allow(''),
+userName:joi.string().min(1).max(100).allow(''),
+}).required();
+
+
+export const checkRequestId=joi.object(
+{
+    requestId:joi.string().min(5).max(30).required(),
+}).required();
+
+export const evaluateRequestOfStudent=joi.object(
+    {
+        state:joi.string().valid("paused","payed","notPayed","rejectedRequest").required(),
+    }
+).required();
