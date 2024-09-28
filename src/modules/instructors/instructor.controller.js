@@ -312,13 +312,17 @@ export const getRequetsOfJoinCourses=async (req,res,next)=>
             {
                 // make the logic for the user name query also:
                 let newArr=[];
+             if(requests.length>0)
+             {
                 requests.forEach((ele,index)=>
-                {
-                    if(ele.userName.includes(data.userName))
                     {
-                        newArr.push(ele);
-                    }
-                });
+                        console.log("this is the course request",ele);
+                        if(ele.subscribeId.userName.includes(data.userName))
+                        {
+                            newArr.push(ele);
+                        }
+                    });
+             }
                await getRequetsToMakeNotSeenState(newArr,next);
                // return  the response:
                return res.json({success:true,requests:newArr,numberRequets:newArr.length})   

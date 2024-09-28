@@ -40,6 +40,9 @@ userRouter.patch("/LikesForWhoJoinNow",authUser,validatin.bodyValidation(userSch
 // handle the new user of cart:
 userRouter.patch("/handleUsersLogInNowForChart",authUser,validatin.bodyValidation(userSchema.handleLikesFOrNowWhoIsLogIn),userController.handleNewUserCart);
 // get my courses lists that i can watch:
-
+userRouter.get("/getMyListsOfCoursesICanWatch",authUser,userController.getMyCoursesICanWatch);
+// get all isntcructors in the academy:
+userRouter.get("/getAllInstrcuctors",userController.getInsctructors)
 // watch any video fro  the course you are partcipnts to:
+
 export default userRouter;

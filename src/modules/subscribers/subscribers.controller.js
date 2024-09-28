@@ -74,7 +74,7 @@ if(!getRequest)
     return next(new Error("there is no request by this id chekc the id and try again or it may be deleted"));
 }
 // check the user if he is the owener of this request or not:
-if(getRequest.subscribeId.tostring()!=_id.tostring())
+if(getRequest.subscribeId.toString()!=_id.toString())
 {
     return next(new Error("you aren't the owner of this request to make any change on it"));
 }
@@ -101,7 +101,7 @@ try
 {
     // get the id of he user:
     const {_id}=req.data;
-    const requests=await subscribersModel.find({subscribeId:_id}).populate([{path:"courseId",populate:[{path:"instrcuctor"}]}]);
+    const requests=await subscribersModel.find({subscribeId:_id}).populate([{path:"courseId",populate:[{path:"instructor"}]}]);
     // retur the resposne:
     return res.json({success:true,requests,numberRequests:requests.length});
 }
@@ -118,9 +118,35 @@ export const getContactInformation=async (req,res,next)=>
         // get the id of the course:
         const {courseId}=req.params;
         const getIns=await courseModel.findOne({_id:courseId}).populate([{path:"instructor"}]);
+        if(!getIns)
+        {
+            return next(new Error("the course is not exists check the id ot it may be deleted"));
+        }
         const {instructor}=getIns;
         // retur the resposne:
         return res.json({success:true,instrcutorInfo:instructor});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+// get infomration about specefiec insrtcitors:
+export const getInsInformation=async (req,res,next)=>
+{
+    try
+    {
+        // egt the id of the course:
+        const {courseId}=req.params;
+        // chekc on if the coure is exists or not:
+        const course=await courseModel.findOne({_id:courseId}).populate([{path:"instructor"}]);
+        if(!course)
+        {
+            return next(new Error("the course id is not tru or the course is may be deleted"));
+        }
+        const {instructor}=course;
+        // return the response:
+        return res.json({success:true,instructorData:instructor});
     }
     catch(err)
     {

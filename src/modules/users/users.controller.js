@@ -6,6 +6,8 @@ import jwt from 'jsonwebtoken';
 import userTokenModel from "../../../db/models/usersToken/user.token.model.js";
 import { nanoid } from "nanoid";
 import courseModel from "../../../db/models/courses/courses.model.js";
+import participntsModel from "../../../db/models/participnts/partcipints.model.js";
+import employeeModel from "../../../db/models/employees/meployees.model.js";
 export const signUpController=async (req,res,next)=>
 {
     try
@@ -761,4 +763,33 @@ export const handleNewUserCart=async (req,res,next)=>
         return next(err);
     }
 } 
+// get my courses i can watch:
+export const getMyCoursesICanWatch=async (req,res,next)=>
+{
+    try
+    {
+        // get the id of the user:
+        const {_id}=req.data;
+        const getCourses=await participntsModel.find({user:_id}).populate([{path:"user"},{path:"course"}]).sort("-createdAt");
+        return res.json({success:true,coursesLists:getCourses,listsNumber:getCourses.length});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+export const getInsctructors=async (req,res,next)=>
+{
+    try
+    {
+        // egt the isntrutrs data:
+        const isntcrutors=await employeeModel.find({role:"instructor"}).sort("name");
+        // retur the response:
+        return res.json({success:true,isntcrutors});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
 //////////////////////////////////////////////////

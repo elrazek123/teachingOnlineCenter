@@ -7,6 +7,7 @@ import categoryModel from "../../../db/models/catgeory/catagory.model.js";
 import sectionModel from "../../../db/models/sections/section.model.js";
 import lessonModel from "../../../db/models/lessons/lessons.model.js";
 import userModel from "../../../db/models/users/users.model.js";
+import subscribersModel from "../../../db/models/subscribers/subscribers.model.js";
 // add course comtroller:
 export const addCourse = async (req, res, next) => {
     try {
@@ -777,6 +778,8 @@ export const deleteCourse=async (req,res,next)=>
         await userModel.updateMany({cart:{$in:courseId}},{$pull:{cart:courseId}});
         // likes = also:
         await userModel.updateMany({likes:{$in:courseId}},{$pull:{likes:courseId}});
+        // delete all the request son this course:
+        await subscribersModel.deleteMany({courseId:courseId});
         // RETUR THE RESPOSNE:
         return res.json({success:true,message:"the course is deleted sucessfully",courses:deletd});
     }
