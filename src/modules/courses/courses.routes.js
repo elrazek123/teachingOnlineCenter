@@ -7,6 +7,7 @@ import uploadingFileRequets from "../../utils/uploadingFiles.js";
 import * as validation from '../../validation/validation.js';
 import authentecationEmployee from './../../auth/employee.auth.js';
 import sectionRouter from "../sections/sections.routes.js";
+import authUser from "../../auth/users.auth.js";
 const courseRouter=Router({mergeParams:true});
 // go to the sections routes:
 courseRouter.use("/sections",sectionRouter);
@@ -21,5 +22,10 @@ courseRouter.delete("/deleteCourse/:courseId",authentecationEmployee,authorizati
 // get the courses of the instuctor:
 courseRouter.get("/getMyCourses",authentecationEmployee,authorizationEmpoyee("superAdmin","instructor"),validation.bodyValidation(courseSchema.getCoursesForSpIns),courseController.getInsCourses);
 // egt course plan with sections and with lesosns:
-courseRouter.get("/getCoursePlan/:courseId",validation.paramsValidation(courseSchema.checkCourse),courseController.getPlan)
+courseRouter.get("/getCoursePlan/:courseId",validation.paramsValidation(courseSchema.checkCourse),courseController.getPlan);
+// watch course for the studnets:
+courseRouter.get("/watchCourseMedia/:lessonId",authUser,validation.paramsValidation(courseSchema.checkLessonId),courseController.watchCourseMedia);
+// watch the course media for the employees:
+ courseRouter.get("/WatchMediaOfTheCourseForEmployees/:lessonId",authentecationEmployee,authorizationEmpoyee("superAdmin","instructor"),validation.paramsValidation(courseSchema.checkLessonId),courseController.watchMediaOfCourseForEMmployees)
+// watch course for instructior:
 export default courseRouter;

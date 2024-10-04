@@ -8,6 +8,8 @@ import sectionModel from "../../../db/models/sections/section.model.js";
 import lessonModel from "../../../db/models/lessons/lessons.model.js";
 import userModel from "../../../db/models/users/users.model.js";
 import subscribersModel from "../../../db/models/subscribers/subscribers.model.js";
+import participntsModel from "../../../db/models/participnts/partcipints.model.js";
+import employeeModel from "../../../db/models/employees/meployees.model.js";
 // add course comtroller:
 export const addCourse = async (req, res, next) => {
     try {
@@ -856,5 +858,121 @@ export const getPlan=async (req,res,next)=>
         return next(err);
     }
 }
-//get details of sp course:
+// check the course medial:
+export const watchCourseMedia=async (req,res,next)=>
+{
+    try
+    {
+        // get the id of the user:
+        const {_id}=req.data;
+        // get the id of the lesson:
+        const {lessonId}=req.params;
+        const lesson=await lessonModel.findOne({_id:lessonId}).populate([{path:'section'}]);
+        if(!lesson)
+        {
+            return next(new Error("the lesson is not exists check the id and try again"));
+        }
+        // get the id's of courses that the user partcipnts on it:
+        const particpintsCourses=await participntsModel.find({user:_id});
+        if(particpintsCourses.length<=0)
+        {
+            return next(new Error("you not join to any course yet contact with the owner of this course or join to the course now"));
+        }
+        let coursesIds=[];
+        particpintsCourses.forEach((ele)=>
+        {
+            const {course}=ele;
+            coursesIds.push(course);
+        });
+        console.log("tge user is",_id,"the course is",lesson.course,"the lessons is:",lessonId);
+        let flagExists=false;
+        coursesIds.forEach((ele)=>
+        {
+            if(ele.toString()==lesson.course.toString())
+            {
+                flagExists=true;
+            }
+        });
+        if(!flagExists)
+        {
+            return next(new Error("you not join to this course yet or this lesson is not related to this course"));
+        }
+        // return the response:
+        return res.json({success:true,message:"yes the user can see the lesson and the course data",lesson});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+// wathcn the media of hre course for the employees:
+export const watchMediaOfCourseForEMmployees=async (req,res,next)=>
+{
+    try
+    {
+        // get the id of the employees:
+        const {_id}=req.data;
+        // get the id of the lesson:
+        const {lessonId}=req.params;
+        const lesson=await lessonModel.findOne({_id:lessonId}).populate([{path:"course"},{path:"section"}]);
+        if(!lesson)
+        {
+            return next(new Error("the lesson id is not exists check the id or the owner delete it"));
+        }
+        // check if it superadmin or instructor:
+        const user=await employeeModel.findOne({_id});
+        if(!user)
+        {
+            return next(new Error("the user is not exists"));
+        }
+                // if superadmin give him all the data:
+        // if it ins(check if he is the owner of the course or not and check if chrkc if the lesson is belong to this course or not):
+        if(user.role=="superAdmin")
+        {
+            // mak the logic of the super:
+            return res.json({success:true,message:"you can see the lesson data",lesson})
+        }
+        else if(user.role=="instructor")
+        {
+            // get all courses that this lesson own:
+            const coursesIns=await courseModel.find({instructor:_id});
+            console.log(coursesIns);
+            if(coursesIns.length<=0)
+            {
+                return next(new Error("you not have any courses you own to see"));
+            }
+            // get the id's of all the courses:
+            let coursesIds=[];
+            coursesIns.forEach((ele)=>
+            {
+                const {_id}=ele;
+                coursesIds.push(_id);
+            });
+            // now check tht lesson relate to any course the ins have:
+            let flag=false;
+            for(let i=0;i<coursesIds.length;i++)
+            {
+                if(coursesIds[i].toString()==lesson.course._id&&lesson.course.instructor.toString()==_id.toString())
+                {
+                    flag=true;
+                    break;
+                }
+            }
+            if(!flag)
+            {
+                return next(new Error("you not the owner of this course to see it"));
+            }
+            return res.json({success:true,message:"you can see the lesson data",lesson});
+        }
+        else
+        {
+            return next(new Error("to see the data of the course you must be the owner of this course or you must be SuperAdmin"));
+        }
+
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
 //////////////////////

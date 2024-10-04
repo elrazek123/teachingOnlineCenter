@@ -5,10 +5,12 @@ import * as userSchema from './users.schema.js';
 import uploadingFileRequets from "../../utils/uploadingFiles.js";
 import authUser from "../../auth/users.auth.js";
 import subscribersRoutes from "../subscribers/subScribers.routes.js";
+import courseRouter from "../courses/courses.routes.js";
 const userRouter=Router({mergeParams:true});
 // we will ake the user routers:
 //go tot he routes of subscribers:
-userRouter.use("/subscriber",subscribersRoutes)
+userRouter.use("/subscriber",subscribersRoutes);
+userRouter.use("/courses",courseRouter);
 // sign up
 userRouter.post("/signUpForusers",uploadingFileRequets().any(),validatin.bodyValidation(userSchema.signUpSchema),userController.signUpController);
 // activte email:

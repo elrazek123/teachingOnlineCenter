@@ -66,3 +66,7 @@ export const checkOnTheWahtWillYouLearnUpdate=joi.object(
 id:joi.array().items(joi.string().min(5).required()).min(1).required(),
 objective:joi.array().items(joi.string().min(1).required()).min(1).required(),
 }).required();
+export const checkLessonId=joi.object(
+{
+  lessonId:joi.string().min(5).max(30).required(),
+}).required();

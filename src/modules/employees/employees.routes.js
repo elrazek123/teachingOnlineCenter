@@ -8,10 +8,13 @@ import authentecationEmployee from '../../auth/employee.auth.js';
 import authorizationEmpoyee from '../../authorization/employee.authorization.js';
 import checkEmployee from '../../utils/checkEmployeeForUpdate.js';
 import instRouter from '../instructors/instructors.routes.js';
+import courseRouter from '../courses/courses.routes.js';
 const empRouter=Router({mergeParams:true});
 // api's of the employees:(admins actions):
 // rpoutes fro the instrcutor api's:
 empRouter.use("/instructors",instRouter);
+//courses routes:
+empRouter.use("/courses",courseRouter);
 // add new employee from the admin (can be admin or instructor):
 empRouter.post("/addNewEmployee",authentecationEmployee,authorizationEmpoyee("superAdmin"),uploadingFileRequets().any(),checkIfAdminOrNot,empController.addEmployeeByAdmin);
 // active the accosount of the employeee whcih is added by the admin:
