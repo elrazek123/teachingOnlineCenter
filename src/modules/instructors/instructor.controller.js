@@ -236,7 +236,7 @@ export const getRequetsOfJoinCourses=async (req,res,next)=>
         const {_id}=req.data;
         let requests=[];
         // check on the id of the course if it exists:
-        const data=req.body;
+        const data=req.query;
         // get all the the courses these instructor study:
         const getCourses=await employeeModel.findOne({_id}).populate([{path:"courses"}]);
         // get courses:
@@ -254,6 +254,7 @@ export const getRequetsOfJoinCourses=async (req,res,next)=>
         // make the query to get the courses and make this:
         requests=await subscribersModel.find({courseId:{$in:ids}}).populate([{path:"subscribeId"},{path:"courseId"}]).sort("cretedAt");
         await getRequetsToMakeNotSeenState(requests,next);
+        console.log(requests);
         //return the response:
         return res.json({success:true,requests,numberRequets:requests.length});
         }
@@ -280,7 +281,7 @@ export const getRequetsOfJoinCourses=async (req,res,next)=>
         if(data.state)
             objectFilter.state=data.state;
         if(data.userId)
-            objectFilter.subscribeId=req.body.userId;
+            objectFilter.subscribeId=req.query.userId;
         if(objectFilter.courseId)
         {
         // make the query to get the courses and make this:

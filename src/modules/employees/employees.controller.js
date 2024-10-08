@@ -6,6 +6,7 @@ import sendingEmail from '../../utils/sendEmail.js';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import empTokenModel from '../../../db/models/employees/tokens/em[ployee.token.model.js';
+import courseModel from '../../../db/models/courses/courses.model.js';
 export const addEmployeeByAdmin=async (req,res,next)=>
 {
 try
@@ -2146,6 +2147,203 @@ export const getEmpProfile=async (req,res,next)=>
         }
         // returnt eh resposne:
         return res.json({success:true,user});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+// updte the profile links of the employeess:
+export const updateProfileLinksController=async (req,res,next)=>
+{
+    try
+    {
+        // get the id of the user:
+        const {_id}=req.data;
+        // get the user data ans chekc on the links all of them:
+        const user=await employeeModel.findOne({_id});
+        if(!user)
+        {
+            return next(new Error("the user is not exists chekc the id and try again"));
+        }
+        let  {profileLinks}=user;
+        // chekc on the logo of profile:
+        const {facebook,linkedin,github,youtube}=req.body;
+        const newMapGet=new Map(Object.entries(req.body));
+        let flag=false;
+        newMapGet.forEach((value,key)=>
+        {
+            if(value)
+            {
+                const newMapMade=new Map(Object.entries(value));
+                newMapMade.forEach((value2,key2)=>
+                {
+                    if(value2)
+                    {
+                        flag=true;
+                    }
+                })
+            }
+        });
+        if(!flag)
+        {
+            return next(new Error("the data is not updated because the object is empty"));
+        }
+        // check on the every link of social media to check it:
+        if(facebook)
+        {
+            // make the logic for the social media facebook:
+            const {link,removeOrNot}=facebook;
+            if(!link&&!removeOrNot)
+            {
+                console.log("the object of facebook is empty");
+            }
+            if(removeOrNot)
+            {
+                if(!profileLinks.facebook.link)
+                {
+                    return next(new Error("there is no link for facebook to delete"));
+                }
+                else
+                {
+                    // remove the link for facebook:
+                    profileLinks.facebook.link="";
+                }
+            }
+            else
+            {
+                if(link)
+                {
+                    // make the logic for the link now:
+                    profileLinks.facebook.link=link;
+                }
+            }
+        }
+        if(linkedin)
+        {
+            const {link,removeOrNot}=linkedin;
+            if(!link&&!removeOrNot)
+            {
+                console.log("the object of linked in is empty");
+            }
+            if(removeOrNot)
+            {
+                // make the logic of it:
+                if(!profileLinks.linkedin.link)
+                {
+                    return next(new Error("there no linkedin link to remove"))
+                }
+                else
+                {
+                    // remove the links:
+                    profileLinks.linkedin.link="";
+                }
+            }
+            else
+            {
+                if(link)
+                {
+                    // if the link is exists what will you do:
+                    profileLinks.linkedin.link=link;
+                }
+            }
+        }
+        if(github)
+        {
+            // make the logic for github:
+            const {link,removeOrNot}=github;
+            if(!link&&!removeOrNot)
+            {
+                console.log("the object is empty of github to update");
+            }
+            // check now remove or not:
+            if(removeOrNot)
+            {
+                if(!profileLinks.github.link)
+                {
+                    return next(new Error("there is no link for github to remove"));
+                }
+                else
+                {
+                    profileLinks.github.link="";
+                }
+            }
+            else
+            {
+                if(link)
+                {
+                    profileLinks.github.link=link;
+                }
+            }
+        }
+        if(youtube)
+        {
+            // make the logic for github:
+            const {link,removeOrNot}=youtube;
+            if(!link&&!removeOrNot)
+            {
+                console.log("the object is empty of youtube to update");
+            }
+            // check now remove or not:
+            if(removeOrNot)
+            {
+                if(!profileLinks.youtube.link)
+                {
+                    return next(new Error("there is no link for youtube to remove"));
+                }
+                else
+                {
+                    profileLinks.youtube.link="";
+                }
+            }
+            else
+            {
+                if(link)
+                {
+                    profileLinks.youtube.link=link;
+                }
+            }
+        }
+        // mak the query and make it:
+        const newUser=await employeeModel.findOneAndUpdate({_id},{profileLinks:profileLinks},{new:true});
+        // retur the resposne:
+        return res.json({sucess:true,message:"the user data is updated sucessfully"});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+// check the video of course:
+export const watchMediaOfCourse=async(req,res,next)=>
+{
+    try
+    {
+        // get the id of the user:
+        const {_id,role}=req.data;
+        // get the id of the the course:
+        const {courseId}=req.params;
+        // check on the course:
+        const course=await courseModel.findOne({_id:courseId}).populate([{path:"instructor"}]);
+        if(!course)
+        {
+            return next(new Error("the course is not exists check the id or it may be deleted"));
+        }
+        // check the course ins:
+        if(role=="superAdmin")
+        {
+            // give him the access:
+            return res.json({success:true,message:"this user can access the course data"});
+        }
+        // chekc on the ins:
+        else if(role=="instructor")
+        {
+            if(_id.toString()!=course.instructor._id.toString())
+            {
+                return next(new Error("you can't access the data of course because you are not the owner of this course"));
+            }
+        }
+        return res.json({sucess:true,message:"this user can access the course data"})
     }
     catch(err)
     {

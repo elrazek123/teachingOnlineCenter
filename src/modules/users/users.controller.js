@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 import courseModel from "../../../db/models/courses/courses.model.js";
 import participntsModel from "../../../db/models/participnts/partcipints.model.js";
 import employeeModel from "../../../db/models/employees/meployees.model.js";
+import subscribersModel from "../../../db/models/subscribers/subscribers.model.js";
 export const signUpController=async (req,res,next)=>
 {
     try
@@ -786,6 +787,91 @@ export const getInsctructors=async (req,res,next)=>
         const isntcrutors=await employeeModel.find({role:"instructor"}).sort("name");
         // retur the response:
         return res.json({success:true,isntcrutors});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+export const getCoursesWithPayState=async (req,res,next)=>
+{
+    try
+    {
+        // get the id of the user:
+        const {_id}=req.data;
+        // get all the courses of the user with state:
+        const coursesWithState=await subscribersModel.find({subscribeId:_id}).populate([{path:"courseId",populate:[{path:"instructor"}]}]);
+        // get the id and check on it:
+        let allUserCourses=[];
+        // get the id with the state:
+        if(coursesWithState.length>0)
+        {
+            // make the loop and check on it:
+            coursesWithState.forEach((ele)=>
+            {
+                const {state}=ele;
+                const {_id}=ele.courseId;
+                let objectMake={_id,state};
+                allUserCourses.push(objectMake);
+            });
+        }
+        // we now have all the courses of user with this state:
+        let idsOnly=[];
+        allUserCourses.forEach((ele)=>
+        {
+            const {_id}=ele;
+            idsOnly.push(_id.toString());
+        })
+        // getg all the courses:
+      const courses=await courseModel.find().populate([{path:'instructor'}]);
+      let coursesNotWithUs=[];
+      let coursesWithUs=[];
+      courses.forEach((ele,index)=>
+    {
+        if(idsOnly.includes(ele._id.toString()))
+        {
+            // it exists not make any thing becuse it exists already:
+            const objectMake={course:ele};
+            objectMake.state=allUserCourses[index].state;
+            coursesWithUs.push(objectMake);
+            console.log(allUserCourses[index].state);
+            console.log(objectMake);
+        }
+        else
+        {
+            coursesNotWithUs.push(ele);
+        }
+    });
+    // retur the response:
+    return res.json({success:true,coursesNotInCart:coursesNotWithUs,coursesThatPutInCart:coursesWithUs});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+// get the cideos of the course for the user or for the student:
+export const watchMediaOfCourse=async (req,res,next)=>
+{
+    try
+    {
+        // egt the id of the user:
+        const {_id}=req.data;
+        // chekc on the course:
+        const {courseId}=req.params;
+        const course=await courseModel.findOne({_id:courseId}).populate([{path:"instructor"}]);
+        if(!course)
+        {
+            return next(new Error("the course is not exists or it may be deleted"));
+        }
+        // chekc i fthe user has payed this course or not:
+        const checkUserCourse=await participntsModel.findOne({user:_id,course:courseId}).populate([{path:"user"},{path:"course",populate:[{path:"instructor"}]}]);
+        if(!checkUserCourse)
+        {
+            return next(new Error(`the user not subscribe on this course yet or his requets not evaluated by the owner of the course yet if you want to communicate with the instuctor:${course.instructor.phone}`));
+        }
+        // now returnt he response:
+        return res.json({success:true,message:"the user can access the data of course now"});
     }
     catch(err)
     {

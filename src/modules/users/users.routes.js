@@ -46,5 +46,8 @@ userRouter.get("/getMyListsOfCoursesICanWatch",authUser,userController.getMyCour
 // get all isntcructors in the academy:
 userRouter.get("/getAllInstrcuctors",userController.getInsctructors)
 // watch any video fro  the course you are partcipnts to:
-
+// get the courses without the courses you already buy:
+userRouter.get("/getCoursesWithoutYouBuyWithPayState",authUser,userController.getCoursesWithPayState);
+// watch the videos aand media of the course:
+userRouter.get("/watchCourseMedia/:courseId",authUser,validatin.paramsValidation(userSchema.checkCourse),userController.watchMediaOfCourse)
 export default userRouter;

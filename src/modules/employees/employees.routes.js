@@ -51,5 +51,8 @@ empRouter.patch("/updateEmployeeStopState/:empId",authentecationEmployee,authori
 empRouter.get("/getSuperAdminsDataWhoAreStopEmployee",empController.getDataOfIStoppedBYOrState);
 // delete the employee by the superAdmin:
 empRouter.delete("/deleteEmployeeBySuperAdmin/:empId",authentecationEmployee,authorizationEmpoyee("superAdmin"),validation.paramsValidation(empSchema.checkEmployee),empController.deleteEmployeeBySuperAdmin);
-empRouter.get("/getProfileOfEmployee",authentecationEmployee,empController.getEmpProfile)
+empRouter.get("/getProfileOfEmployee",authentecationEmployee,empController.getEmpProfile);
+empRouter.patch("/updateProfileLinksForEmployees",authentecationEmployee,authorizationEmpoyee("superAdmin","instructor"),validation.bodyValidation(empSchema.updateProfleLinks),empController.updateProfileLinksController);
+// get the to watch the video:
+empRouter.get("/watchVideoCourses/:courseId",authentecationEmployee,authorizationEmpoyee("superAdmin","instructor"),validation.paramsValidation(empSchema.checkcourseId),empController.watchMediaOfCourse)
 export default empRouter;

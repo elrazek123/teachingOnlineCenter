@@ -140,6 +140,11 @@ stoppedBy:
 loggedForAccepted:
 {
     type:Number,
+},
+profileLinks:
+{
+    type:{facebook:{link:{type:String}},icon:{type:String,required:true,min:5,max:100},linkedin:{link:{type:String},icon:{type:String,required:true,}},youtube:{link:{type:String,required:true},icon:{type:String,required:true}},github:{icon:{type:String,required:true},link:{type:String,required:true}}},
+    default:{facebook:{icon:"https://static.vecteezy.com/system/resources/previews/017/221/797/non_2x/facebook-logo-transparent-background-free-png.png",link:""},linkedin:{icon:"https://logospng.org/download/linkedin/logo-linkedin-icon-1536.png",link:""},youtube:{icon:"https://logos-world.net/wp-content/uploads/2021/04/Youtube-Music-Logo.png",link:""},github:{icon:"https://th.bing.com/th/id/R.bb04d77a846e6beca811c4be1d8e3442?rik=AHmbuAlB7uHcoA&pid=ImgRaw&r=0",link:""}}
 }
 }
 ,{timestamps:true,toObject:{virtuals:true},toJSON:{virtuals:true},strictQuery:true});

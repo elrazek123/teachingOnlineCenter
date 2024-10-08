@@ -122,3 +122,28 @@ export const updateStopState=joi.object(
 stoppedBySuperAdmin:joi.boolean().required(),
 conditionOfStop:joi.string().min(10),
 }).required();
+
+export const updateProfleLinks=joi.object(
+{
+facebook:joi.object(
+{
+link:joi.string().min(5).max(100).allow(""),
+removeOrNot:joi.boolean().allow(""),
+}),
+linkedin:joi.object({
+    link:joi.string().min(5).max(100).allow(""),
+removeOrNot:joi.boolean().allow(""),
+}),
+github:joi.object({
+    link:joi.string().min(5).max(100).allow(""),
+removeOrNot:joi.boolean().allow(""),
+}),
+youtube:joi.object({
+    link:joi.string().min(5).max(100).allow(""),
+removeOrNot:joi.boolean().allow(""),
+}),
+}).required();
+export const checkcourseId=joi.object(
+{
+courseId:joi.string().min(5).max(40).required(),
+}).required();
