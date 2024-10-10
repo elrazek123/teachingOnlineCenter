@@ -799,51 +799,52 @@ export const getCoursesWithPayState=async (req,res,next)=>
     {
         // get the id of the user:
         const {_id}=req.data;
-        // get all the courses of the user with state:
-        const coursesWithState=await subscribersModel.find({subscribeId:_id}).populate([{path:"courseId",populate:[{path:"instructor"}]}]);
-        // get the id and check on it:
-        let allUserCourses=[];
-        // get the id with the state:
-        if(coursesWithState.length>0)
+        // gcek co the user:
+        const getUserCourses=await participntsModel.find({user:_id}).populate([{path:"course",populate:[{path:"instructor"}]}]);
+        // get the subscibers state:
+        const subscribersCourses=await subscribersModel.find({subscribeId:_id}).populate([{path:"courseId"}]);
+        let idsCart=[];
+        if(subscribersCourses.length>0)
         {
-            // make the loop and check on it:
-            coursesWithState.forEach((ele)=>
+            // egt teh id's of it:
+            subscribersCourses.forEach((ele)=>
             {
-                const {state}=ele;
                 const {_id}=ele.courseId;
-                let objectMake={_id,state};
-                allUserCourses.push(objectMake);
+                idsCart.push(_id.toString());
+            })
+        }
+        // get  the id's of the courses:
+        let idsOfCoursesBuyed=[];
+        let stateArray=[];
+      if(getUserCourses.length>0)
+      {
+        getUserCourses.forEach((ele)=>
+            {
+                let  {_id}=ele.course;
+                idsOfCoursesBuyed.push(_id.toString());
             });
-        }
-        // we now have all the courses of user with this state:
-        let idsOnly=[];
-        allUserCourses.forEach((ele)=>
+      }
+        // get courses all :
+        const courses=await courseModel.find().populate([{path:"instructor"}]).sort("courseName");
+        //  add the cousres state:
+        courses.forEach((ele)=>
         {
-            const {_id}=ele;
-            idsOnly.push(_id.toString());
-        })
-        // getg all the courses:
-      const courses=await courseModel.find().populate([{path:'instructor'}]);
-      let coursesNotWithUs=[];
-      let coursesWithUs=[];
-      courses.forEach((ele,index)=>
-    {
-        if(idsOnly.includes(ele._id.toString()))
-        {
-            // it exists not make any thing becuse it exists already:
-            const objectMake={course:ele};
-            objectMake.state=allUserCourses[index].state;
-            coursesWithUs.push(objectMake);
-            console.log(allUserCourses[index].state);
-            console.log(objectMake);
-        }
-        else
-        {
-            coursesNotWithUs.push(ele);
-        }
-    });
-    // retur the response:
-    return res.json({success:true,coursesNotInCart:coursesNotWithUs,coursesThatPutInCart:coursesWithUs});
+            if(idsOfCoursesBuyed.includes(ele._id.toString()))
+                {
+                    // add the state of buyed:
+                    stateArray.push("buyed");
+                }
+                else if(idsCart.includes(ele._id.toString())&&!idsOfCoursesBuyed.includes(ele._id.toString()))
+                {
+                    stateArray.push("you make request to buy this course contact with the owner of this course");
+                }
+                else
+                {
+                    stateArray.push("not buyed");
+                }
+        });
+        // return the response:
+        return res.json({success:true,courses:courses,stateArray});
     }
     catch(err)
     {
