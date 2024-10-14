@@ -25,6 +25,6 @@ instRouter.get("/getSpInsAboutSpCourse/:insId",validation.paramsValidation(insSc
 instRouter.get("/getAllRequetsToBuyCourse",authentecationEmployee,authorizationEmpoyee("instructor","superAdmin"),validation.queryValidation(insSchema.getRequetsToJoinCoursesSchema),insController.getRequetsOfJoinCourses)
 // evaluate an sp requets fron the studensts:
 instRouter.patch("/evaluateRequestOfStudent/:requestId",authentecationEmployee,authorizationEmpoyee("instructor","superAdmin"),validation.paramsValidation(insSchema.checkRequestId),validation.bodyValidation(insSchema.evaluateRequestOfStudent),insController.evaluateRequetsForJoin)
-// get information about the numbers of students in sp course and all the courses the ins have:
-
+// get the dashboards for the ins:
+instRouter.get("/getInsDahboard",authentecationEmployee,authorizationEmpoyee("instructor"),insController.getInsDashboard)
 export default instRouter;

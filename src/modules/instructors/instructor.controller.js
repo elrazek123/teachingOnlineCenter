@@ -6,6 +6,7 @@ import employeeModel from "../../../db/models/employees/meployees.model.js";
 import subscribersModel from "../../../db/models/subscribers/subscribers.model.js";
 import getRequetsToMakeNotSeenState from "../../utils/makeNotSeenForRequets.fun.js";
 import participntsModel from "../../../db/models/participnts/partcipints.model.js";
+import courseModel from "../../../db/models/courses/courses.model.js";
 export const addRequet=async (req,res,next)=>
 {
     try
@@ -565,3 +566,40 @@ export const evaluateRequetsForJoin=async (req,res,next)=>
         return next(err);
     }
 }
+// ins dashboards:
+export const getInsDashboard=async (req,res,next)=>
+{
+    try
+    {
+        // sgt te id of the ins first:
+        const {_id}=req.data;
+        // get the ins courses that he make or do:
+        const courses=await courseModel.find({instructor:_id});
+        let  collectCourseIdsOfIns=[];
+        courses.forEach((ele)=>
+        {
+            const {_id}=ele;
+            collectCourseIdsOfIns.push(_id);
+        })
+        // get the number of studntts now wants to subscribe to the course:
+        const newStucentsWantToSubscribe=await subscribersModel.find({courseId:{$in:collectCourseIdsOfIns},state:"notSeenYet"});
+        // get the number of students aalready in the course:
+        const studentsThatAlreadyInYourCourses=await participntsModel.find({course:{$in:collectCourseIdsOfIns}});
+        // get the all number of students thta make requeests in all the state:
+        const studentsOrUsersThatInterestedAboutYorCourses=await subscribersModel.find({courseId:{$in:collectCourseIdsOfIns}});
+        // get the number of cousres free tht you make:
+        const coursesFreeThatYouPresent=await courseModel.find({instructor:_id,coursePrice:"free"});
+        // retu the the resposne:
+        return res.json({success:true,
+            courses:courses.length,
+            newStucentsWantToSubscribe:newStucentsWantToSubscribe.length,
+            studentsThatAlreadyInYourCourses:studentsThatAlreadyInYourCourses.length,
+            studentsOrUsersThatInterestedAboutYorCourses:studentsOrUsersThatInterestedAboutYorCourses.length,
+            coursesFreeThatYouPresent:coursesFreeThatYouPresent.length,
+        })
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}    

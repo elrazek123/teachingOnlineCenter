@@ -56,3 +56,12 @@ export const handleLikesFOrNowWhoIsLogIn=joi.object(
 {
 cousresIds:joi.array().items(joi.string().min(5).max(30),).min(0).required(),
 }).required();
+
+export const getCoursesStateWithFIlter=joi.object(
+{
+courseId:joi.string().min(5).max(40).allow(""),
+coursePrice:joi.string().allow(""),
+category:joi.string().min(1).allow(""),
+subCategory:joi.string().min(1).allow(""),
+insName:joi.string().min(1).allow(""),
+}).required();

@@ -7,6 +7,9 @@ import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import empTokenModel from '../../../db/models/employees/tokens/em[ployee.token.model.js';
 import courseModel from '../../../db/models/courses/courses.model.js';
+import categoryModel from '../../../db/models/catgeory/catagory.model.js';
+import participntsModel from '../../../db/models/participnts/partcipints.model.js';
+import subscribersModel from '../../../db/models/subscribers/subscribers.model.js';
 export const addEmployeeByAdmin=async (req,res,next)=>
 {
 try
@@ -2344,6 +2347,96 @@ export const watchMediaOfCourse=async(req,res,next)=>
             }
         }
         return res.json({sucess:true,message:"this user can access the course data"})
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+// get the dashbords fro super admin:
+export const getDashbForSuperAdmin=async (req,res,next)=>
+{
+    try
+    {
+        // get the courses and categories and subcategoriesand students and the number of instructors and the numbers of instrvuctors requests:
+        const courses=await courseModel.find();
+        const categroeis=await categoryModel.find();
+        let subCategories=[];
+        categroeis.forEach((ele)=>
+        {
+            const {subCategory}=ele;
+            subCategory.forEach((ele2)=>
+            {
+                subCategories.push(ele2);
+            });
+        });
+        // get the number of students:
+        const students=await participntsModel.find();
+        // const the number of ins:
+        const ins=await employeeModel.find({role:"instructor",pinCode:{$ne:null}});
+        // number of request of ins:
+        const requestInsThatNowExists=await employeeModel.find({$or:[{state:"underRevising"},{state:"initiallyAccepted"}],state: { $exists: true, $ne: null }});
+        // numbver of ins requetss all:
+        const requestInsThatAllFromStart=await employeeModel.find({state: { $exists: true, $ne: null }});
+
+        // nsuger of request of stud:
+        const requestsStudentsToBuyCourses=await subscribersModel.find({$or:[{state:"notSeenYet"},{state:"noActionTaken"}]});
+        // get the request of students that already make requets without to the result of the request or the process of buy is completed:
+        const allReqyestsStudents=await subscribersModel.find();
+        // that the numver of ins not payed now:
+        const numberOfInsNotPayedCosts=await employeeModel.find({payState:false});
+        // number of ins stopped now:
+        const numberOfInsThatStoppedBySuperAdmin=await employeeModel.find({stoppedBySuperAdmin:true});
+        // retur the resposne:
+        return res.json({success:true,courses:courses.length,categroeis:categroeis.length,subCategories:subCategories.length,students:students.length,ins:ins.length,requestInsThatNowExists:requestInsThatNowExists.length,requestInsThatAllFromStart:requestInsThatAllFromStart.length,numberOfInsNotPayedCosts:numberOfInsNotPayedCosts.length,numberOfInsThatStoppedBySuperAdmin:numberOfInsThatStoppedBySuperAdmin.length,requestsStudentsToBuyCoursesThatAlreadyNew:requestsStudentsToBuyCourses.length,allReqyestsStudents:allReqyestsStudents.length})
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+// get dashboards for one ins:
+export const getDashboardForSpIns=async (req,res,next)=>
+{
+    try
+    {
+        const {insId}=req.params;
+        // chek con the ins:
+        const ins=await employeeModel.findOne({_id:insId});
+        if(!ins)
+        {
+            return next(new Error("the instcructor id is not exists check the id and try again"));
+        }
+        if(ins.role!="instructor")
+        {
+            return next(new Error("the dashboards is only can get when the employee role is instrcutor"))
+        }
+        const {_id}=ins;
+        // check on the ins good it:
+        // get the ins courses that he make or do:
+        const courses=await courseModel.find({instructor:_id});
+        let  collectCourseIdsOfIns=[];
+        courses.forEach((ele)=>
+        {
+            const {_id}=ele;
+            collectCourseIdsOfIns.push(_id);
+        })
+        // get the number of studntts now wants to subscribe to the course:
+        const newStucentsWantToSubscribe=await subscribersModel.find({courseId:{$in:collectCourseIdsOfIns},state:"notSeenYet"});
+        // get the number of students aalready in the course:
+        const studentsThatAlreadyInYourCourses=await participntsModel.find({course:{$in:collectCourseIdsOfIns}});
+        // get the all number of students thta make requeests in all the state:
+        const studentsOrUsersThatInterestedAboutYorCourses=await subscribersModel.find({courseId:{$in:collectCourseIdsOfIns}});
+        // get the number of cousres free tht you make:
+        const coursesFreeThatYouPresent=await courseModel.find({instructor:_id,coursePrice:"free"});
+        // retu the the resposne:
+        return res.json({success:true,
+            courses:courses.length,
+            newStucentsWantToSubscribe:newStucentsWantToSubscribe.length,
+            studentsThatAlreadyInYourCourses:studentsThatAlreadyInYourCourses.length,
+            studentsOrUsersThatInterestedAboutYorCourses:studentsOrUsersThatInterestedAboutYorCourses.length,
+            coursesFreeThatYouPresent:coursesFreeThatYouPresent.length,
+        });
     }
     catch(err)
     {

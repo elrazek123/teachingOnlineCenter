@@ -54,5 +54,9 @@ empRouter.delete("/deleteEmployeeBySuperAdmin/:empId",authentecationEmployee,aut
 empRouter.get("/getProfileOfEmployee",authentecationEmployee,empController.getEmpProfile);
 empRouter.patch("/updateProfileLinksForEmployees",authentecationEmployee,authorizationEmpoyee("superAdmin","instructor"),validation.bodyValidation(empSchema.updateProfleLinks),empController.updateProfileLinksController);
 // get the to watch the video:
-empRouter.get("/watchVideoCourses/:courseId",authentecationEmployee,authorizationEmpoyee("superAdmin","instructor"),validation.paramsValidation(empSchema.checkcourseId),empController.watchMediaOfCourse)
+empRouter.get("/watchVideoCourses/:courseId",authentecationEmployee,authorizationEmpoyee("superAdmin","instructor"),validation.paramsValidation(empSchema.checkcourseId),empController.watchMediaOfCourse);
+// make dashbords for superAdmin:
+empRouter.get("/getDashboarsdForSupeAdmin",authentecationEmployee,authorizationEmpoyee("superAdmin"),empController.getDashbForSuperAdmin);
+// get dashboards for every employee to the super admin:
+empRouter.get("/getSpInsForSuperAdminDashboard/:insId",authentecationEmployee,authorizationEmpoyee("superAdmin"),validation.paramsValidation(empSchema.checkInsId),empController.getDashboardForSpIns)
 export default empRouter;

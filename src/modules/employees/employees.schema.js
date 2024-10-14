@@ -147,3 +147,7 @@ export const checkcourseId=joi.object(
 {
 courseId:joi.string().min(5).max(40).required(),
 }).required();
+export const checkInsId=joi.object(
+{
+    insId:joi.string().min(5).max(40).required(),
+}).required();
