@@ -945,6 +945,12 @@ export const getCoursesWithPayState=async (req,res,next)=>
             objectFilter.category=data.category;
         if(data.subCategory)
             objectFilter['subCategory.subCategoryId']=data.subCategory;
+        if(data.courseName)
+            objectFilter.courseName={$regex:data.courseName,$options:"i"};
+        if(data.courseHours)
+            objectFilter.courseHours={$lte:data.courseHours}
+        if(data.teachedBy)
+            objectFilter.teachedBy={$regex:data.teachedBy,$options:"i"};
         // make the query now:
         let coursesGet=await courseModel.find(objectFilter).populate([{path:"category"},{path:"instructor"}]).sort("courseName");
         let resultsFinal=[...coursesGet];

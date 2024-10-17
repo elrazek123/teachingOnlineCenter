@@ -64,4 +64,7 @@ coursePrice:joi.string().allow(""),
 category:joi.string().min(1).allow(""),
 subCategory:joi.string().min(1).allow(""),
 insName:joi.string().min(1).allow(""),
+courseName:joi.string().min(1).allow(""),
+courseHours:joi.string().min(1).allow(""),
+teachedBy:joi.string().min(1).allow(""),
 }).required();
