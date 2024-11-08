@@ -8,6 +8,7 @@ import sendingEmail from './src/utils/sendEmail.js';
 import categoryRouter from './src/modules/categories/catgeory.routes.js';
 import calculateTotalTime from './src/utils/fucntion.time.js';
 import userRouter from './src/modules/users/users.routes.js';
+import  joi from 'joi';
 const app=express();
 app.use(express.json());
 app.use(cors());
@@ -113,3 +114,4 @@ catch(err)
 })
 // connect to the server port:
 app.listen(3000,()=>{console.log("the server is conncted sucessfully on the port ",3000)});
+

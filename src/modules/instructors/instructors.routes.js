@@ -7,9 +7,12 @@ import authentecationEmployee from './../../auth/employee.auth.js';
 import authorizationEmpoyee from "../../authorization/employee.authorization.js";
 import courseRouter from "../courses/courses.routes.js";
 import lessonRouter from "../lessons/lesson.routes.js";
+import testRouter from "../test/test.routes.js";
 const instRouter=Router({mergeParams:true });
 // cousrers routes:
 instRouter.use("/courses",courseRouter);
+// tests router:
+instRouter.use("/test",testRouter);
 // instriuctors api's:
 // add request:
 instRouter.post("/addRequestInstructor",uploadingFileRequets().any(),validation.bodyValidation(insSchema.addRequestSchema),insController.addRequet);
