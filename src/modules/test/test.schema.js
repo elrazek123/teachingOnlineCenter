@@ -94,3 +94,47 @@ export const updateTestsAnswersOfTets=joi.array().items(joi.object(
   chooseId:joi.string().min(3).max(5).required(),
 }).required()).min(1).required();
 export const deleteChoosesTest=joi.array().min(1).items(joi.string().min(3).max(10).required()).required();
+// deleett eh test:
+export const checktestIdSchema=joi.object(
+{
+  testId:joi.string().min(5).required(),
+}).required();
+// solve the test schema:
+export const solveTestSchema=joi.object(
+{
+eachQuestion:joi.array().items(joi.object(
+{
+questionId:joi.string().min(5).max(6).required(),
+answersOfThisQuestionsChooses:joi.array().min(1).items(joi.string().min(4).max(7).required()),
+answerOfQuestionNotMcq:joi.string().min(1).max(1200000),
+}).required()).min(1).required(),
+}).required();
+// get the test for the ins with filters:
+export const testsForInsSchema=joi.object(
+{
+course:joi.string().allow(""),
+}).required();
+export const getResultForInsWIthFiltersOptions=joi.object(
+{
+  finalResult:joi.string().valid("true","false").allow(""),
+}).required();
+export const checkOnResultId=joi.object(
+{
+  resultId:joi.string().min(5).required(),
+}).required();
+export const markEssayQuestionSchema=joi.object(
+{
+resultsOfEssayQuestions:joi.array().min(1).items(joi.object(
+{
+  questionId:joi.string().min(4).max(7).required(),
+  state:joi.string().valid("trueQuestion","falseQuestion").required(),
+}).required()).required(),
+}).required();
+export const getResultsOptions=joi.object(
+{
+filter:joi.string().valid("underMarking","marked").allow("").required(),
+}).required();
+export const checkCourseId=joi.object(
+{
+  courseId:joi.string().min(5).max(30).required(),
+}).required();

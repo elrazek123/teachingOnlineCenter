@@ -1,1 +1,1 @@
-updateEmpData
+addEmployeeByAdmin

@@ -184,6 +184,47 @@ catch(err)
     console.log("error,there is an error in the updating of question answer",err);
 }
 }
-// for deleting:
-// after all of this we must check on the questions and check on the answers and relation between them to maek sure of validity (very important):
+// check on the test fucntion to solve the test by the students and make all validations:
+export function solveTestByStdValidation(testQuestions,eachQuestion)
+{
+    try
+    {
+        // check first on the numbers of questions if it equels or not:
+        if(testQuestions.length!=eachQuestion.length)
+        {
+            return "error,you must answer all the test questions  all the questions are required";
+        }
+        // check on that all the questions are exists and solved:
+        // get all the questions from the students:
+        let allQuestionsIdsFromStudents=[];
+        eachQuestion.forEach((ele)=>
+        {
+            const {questionId}=ele;
+            allQuestionsIdsFromStudents.push(questionId);
+        })
+        let flagOfExistsOfQuestions=true;
+        testQuestions.forEach((ele)=>
+        {
+            const {questionId}=ele;
+            if(!allQuestionsIdsFromStudents.includes(questionId))
+            {
+                flagOfExistsOfQuestions=false;
+            }
+            if(!flagOfExistsOfQuestions)
+            {
+                return "error all the questions must be answered because all the questions are required";
+            }
+        });
+        if(!flagOfExistsOfQuestions)
+            {
+                return "error all the questions must be answered because all the questions are required";
+            }
+        // the validation is good now and all is done successfully:
+        return "yes continue";
+    }
+    catch(err)
+    {
+        return `there is an erro in the fucntion of test validation ${err}`;
+    }
+}
 export default checkTestValidation;

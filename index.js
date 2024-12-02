@@ -9,6 +9,7 @@ import categoryRouter from './src/modules/categories/catgeory.routes.js';
 import calculateTotalTime from './src/utils/fucntion.time.js';
 import userRouter from './src/modules/users/users.routes.js';
 import  joi from 'joi';
+import testRouter from './src/modules/test/test.routes.js';
 const app=express();
 app.use(express.json());
 app.use(cors());
@@ -20,8 +21,8 @@ app.use("/employees",empRouter);
 app.use("/categories",categoryRouter);
 // users routes:
 app.use("/users",userRouter);
-
-
+// tests routes:
+app.use("/tests",testRouter);
 // not found page api:
 app.all("*",(req,res,next)=>{
     return res.json({
@@ -114,4 +115,3 @@ catch(err)
 })
 // connect to the server port:
 app.listen(3000,()=>{console.log("the server is conncted sucessfully on the port ",3000)});
-

@@ -6,7 +6,10 @@ import uploadingFileRequets from "../../utils/uploadingFiles.js";
 import authUser from "../../auth/users.auth.js";
 import subscribersRoutes from "../subscribers/subScribers.routes.js";
 import courseRouter from "../courses/courses.routes.js";
+import testRouter from "../test/test.routes.js";
 const userRouter=Router({mergeParams:true});
+// go to the test router:
+userRouter.use("/tests",testRouter);
 // we will ake the user routers:
 //go tot he routes of subscribers:
 userRouter.use("/subscriber",subscribersRoutes);
@@ -49,5 +52,6 @@ userRouter.get("/getAllInstrcuctors",userController.getInsctructors)
 // get the courses without the courses you already buy:
 userRouter.get("/getCoursesWithoutYouBuyWithPayState",authUser,validatin.queryValidation(userSchema.getCoursesStateWithFIlter),userController.getCoursesWithPayState);
 // watch the videos aand media of the course:
-userRouter.get("/watchCourseMedia/:courseId",authUser,validatin.paramsValidation(userSchema.checkCourse),userController.watchMediaOfCourse)
+userRouter.get("/watchCourseMedia/:courseId",authUser,validatin.paramsValidation(userSchema.checkCourse),userController.watchMediaOfCourse);
+// solev the test and choose any test from the course to solve now:
 export default userRouter;
