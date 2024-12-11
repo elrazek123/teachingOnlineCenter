@@ -32,7 +32,7 @@ testRouter.patch("/updateResultByIns/:resultId",authentecationEmployee,authoriza
 // get the test results for the students with all options of filter:
 testRouter.get("/getTestMarks",authUser,validation.bodyValidation(testSchema.getResultsOptions),testController.getMarksForStudets);
 // get all the test for sp course:
-testRouter.get("/getCorseTests/:courseId",validation.paramsValidation(testSchema.checkCourseId),testController.getTheTestsThatRelatedToSpCourse);
+testRouter.get("/getCorseTests/:courseId",validation.paramsValidation(testSchema.checkCourseId),validation.queryValidation(testSchema.getWithFIlterOptionsForCourse),testController.getTheTestsThatRelatedToSpCourse);
 // egtt he tets data to the std:
 testRouter.get("/getTestDataToStd/:testId",authUser,validation.paramsValidation(testSchema.checktestIdSchema),testController.getTestDataToStdToSolve)
 export default testRouter;

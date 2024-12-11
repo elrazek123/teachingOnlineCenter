@@ -113,6 +113,7 @@ answerOfQuestionNotMcq:joi.string().min(1).max(1200000),
 export const testsForInsSchema=joi.object(
 {
 course:joi.string().allow(""),
+examName:joi.string().min(1).allow(""),
 }).required();
 export const getResultForInsWIthFiltersOptions=joi.object(
 {
@@ -138,3 +139,7 @@ export const checkCourseId=joi.object(
 {
   courseId:joi.string().min(5).max(30).required(),
 }).required();
+export const getWithFIlterOptionsForCourse=joi.object(
+{
+examName:joi.string().min(1).allow(""),
+}).required()

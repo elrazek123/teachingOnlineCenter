@@ -629,14 +629,14 @@ export const solveTestSchema=async (req,res,next)=>
             console.log(correctAnswers);
             // make the logic for if this is the final result:
             // save the docuemnt of the test in the results and save the correct answers and wrong answers:
-            await resultsModel.create({student:_id,test:testId,finalResult:true,questionOfTest:testQuestions,studentsAnswers:eachQuestion,totalMarksOfTest:totalMarksOfTest,studentMarks:`${studentMarks}/${totalMarksOfTest}`,wrongAnswers,correctAnswers,abilityToseen:"marked"});
+            await resultsModel.create({student:userPartcipints._id,test:testId,finalResult:true,questionOfTest:testQuestions,studentsAnswers:eachQuestion,totalMarksOfTest:totalMarksOfTest,studentMarks:`${studentMarks}/${totalMarksOfTest}`,wrongAnswers,correctAnswers,abilityToseen:"marked"});
             // return  the resposne:
             return res.json({success:true,message:`you sucessfully finished the exam your results is: ${studentMarks}/${totalMarksOfTest}`});
         }
         else
         {
             // make the logic if it not final result and there is an asssay question not marked yet:
-            await resultsModel.create({student:_id,test:testId,finalResult:false,questionOfTest:testQuestions,studentsAnswers:eachQuestion,totalMarksOfTest:totalMarksOfTest,studentMarks:`${studentMarks}/${totalMarksOfTest}`,wrongAnswers,correctAnswers,restOfQuestions:restOfQuestions,abilityToseen:"underMarking"});
+            await resultsModel.create({student:userPartcipints._id,test:testId,finalResult:false,questionOfTest:testQuestions,studentsAnswers:eachQuestion,totalMarksOfTest:totalMarksOfTest,studentMarks:`${studentMarks}/${totalMarksOfTest}`,wrongAnswers,correctAnswers,restOfQuestions:restOfQuestions,abilityToseen:"underMarking"});
             // return the response:
             return res.json({success:true,message:"you successfully finished the exam wait for the result the exam will marked then the result will send to you"})
         }
@@ -656,6 +656,7 @@ export const getTestsForSuperAdmin=async (req,res,next)=>
         // get the filters options:
         const filterData=req.query;
         // get all the ins courses:
+        console.log("i'm here");
         const allCoursesForThisIns=await courseModel.find({instructor:_id});
         if(allCoursesForThisIns.length==0)
         {
@@ -689,17 +690,32 @@ export const getTestsForSuperAdmin=async (req,res,next)=>
             const getTests=await testModel.find({forCourse:{$in:coursesIdsWithOutObjectId}}).sort("createdAt updatedAt");
             return res.json({success:true,tests:getTests,numberOfTests:getTests.length});
         }
+        let objectFilter={};
         if(filterData.course)
         {
-            if(coursesIdsWithOutObjectId.includes(filterData.course.toString()))
-            {
-                const test=await testModel.findOne({_id:filterData.course});
-                return res.json({success:true,tests:test,numberOfTests:1})
-            }
-            else
-            {
-                return next(new Error("sorry, you can;t get the tests fro this course becuase you are not the owner of this course"));
-            }
+           // cehck if this course is rrelated to the ins:
+           if(coursesIdsWithOutObjectId.includes(filterData.course))
+           {
+            objectFilter.forCourse=filterData.course;
+           }
+           else
+           {
+            return next(new Error("the course you want to get it's tests not available for you because you are not the owner of it"));
+           }
+        }
+        if(filterData.examName)
+        {
+          objectFilter.testName={$regex:filterData.examName,$options:"i"};
+        }
+        if(objectFilter.forCourse)
+        {
+            const getTests=await testModel.find(objectFilter).populate([{path:"forCourse"}]);
+            return res.json({success:true,tests:getTests,numberOfTests:getTests.length})
+        }
+        else
+        {
+            const getTests=await testModel.find({forCourse:{$in:coursesIdsWithObjectId},...objectFilter}).populate([{path:"forCourse"}]);
+            return res.json({success:true,tests:getTests,numberOfTests:getTests.length});
         }
     }
     catch(err)
@@ -759,24 +775,24 @@ export const getTestsResultForIns=async (req,res,next)=>
         if(!finalResult&&finalResult!=false&&finalResult!=0)
         {
             // egt all the results of this test:
-            const results=await resultsModel.find({test:testId}).populate([{path:"test"},{path:"student"}]).sort("createdAt");
+            const results=await resultsModel.find({test:testId}).populate([{path:"test"},{path:"student",populate:[{path:"user"}]}]).sort("createdAt");
             return res.json({success:true,results,numberOfStdTakeTest:results.length});
         }
         else
         {
             if(finalResult=="true")
             {
-                const results=await resultsModel.find({test:testId,finalResult:true}).populate([{path:"test"},{path:"student"}]).sort("createdAt");
+                const results=await resultsModel.find({test:testId,finalResult:true}).populate([{path:"test"},{path:"student",populate:[{path:"user"}]}]).sort("createdAt");
                 return res.json({success:true,results,numberOfStdTakeTest:results.length});
             }
             else if(finalResult=="false")
             {
-                const results=await resultsModel.find({test:testId,finalResult:false}).populate([{path:"test"},{path:"student"}]).sort("createdAt");
+                const results=await resultsModel.find({test:testId,finalResult:false}).populate([{path:"test"},{path:"student",populate:[{path:"user"}]}]).sort("createdAt");
                 return res.json({success:true,results,numberOfStdTakeTest:results.length});
             }
             else
             {
-                const results=await resultsModel.find({test:testId}).populate([{path:"test"},{path:"student"}]).sort("createdAt");
+                const results=await resultsModel.find({test:testId}).populate([{path:"test"},{path:"student",populate:[{path:'user'}]}]).sort("createdAt");
                 return res.json({success:true,results,numberOfStdTakeTest:results.length});
             }
         }
@@ -853,7 +869,7 @@ export const markEssayQuestion=async (req,res,next)=>
             }
         }
         // update the data in the results:
-       let newResult= await resultsModel.findOneAndUpdate({_id:resultId},{restOfQuestions,totalMarksOfTest,correctAnswers,wrongAnswers,studentMarks:`${studentMarkAfterHandle}/${totalMarksOfTest}`,finalResult:true,abilityToseen:"marked"},{new:true});
+       let newResult= await resultsModel.findOneAndUpdate({_id:resultId},{restOfQuestions,totalMarksOfTest,correctAnswers,wrongAnswers,studentMarks:`${studentMarkAfterHandle}/${totalMarksOfTest}`,finalResult:true,abilityToseen:"marked"},{new:true}).populate([{path:"student",populate:[{path:"user"}]},{path:"test"}]);
        // returnt the response:
        return res.json({success:true,message:"the test is marked sucessfully",newResult});
     }
@@ -906,6 +922,21 @@ export const getTheTestsThatRelatedToSpCourse=async (req,res,next)=>
         const {courseId}=req.params;
         // egt the testv realted to this course:
         const tests=await testModel.find({forCourse:courseId});
+        const dataFIlter=req.query;
+        const getObjectMap=new Map(Object.entries(dataFIlter));
+        let flagOfFIlter=true;
+        getObjectMap.forEach((value,key)=>
+        {
+            if(!value)
+            {
+                flagOfFIlter=false;
+            }
+        });
+        if(flagOfFIlter)
+        {
+            const tests=await testModel.find({forCourse:courseId,testName:{$regex:dataFIlter.examName,$options:"i"}}).populate([{path:"forCourse"}]);
+            return res.json({success:true,courseTests:tests});
+        }
         // retur the  resposne:
         return res.json({success:true,courseTests:tests});
     }
