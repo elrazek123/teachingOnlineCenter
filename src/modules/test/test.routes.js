@@ -34,6 +34,8 @@ testRouter.get("/getTestMarks",authUser,validation.bodyValidation(testSchema.get
 // get all the test for sp course:
 testRouter.get("/getCorseTests/:courseId",validation.paramsValidation(testSchema.checkCourseId),validation.queryValidation(testSchema.getWithFIlterOptionsForCourse),testController.getTheTestsThatRelatedToSpCourse);
 // egtt he tets data to the std:
-testRouter.get("/getTestDataToStd/:testId",authUser,validation.paramsValidation(testSchema.checktestIdSchema),testController.getTestDataToStdToSolve)
+testRouter.get("/getTestDataToStd/:testId",authUser,validation.paramsValidation(testSchema.checktestIdSchema),testController.getTestDataToStdToSolve);
+// get specefiec rseult to the user ofr the student:
+testRouter.get("/getSpResToStd/:resId",authUser,validation.paramsValidation(testSchema.getSpRes),testController.getSpRseToStdController)
 export default testRouter;
 

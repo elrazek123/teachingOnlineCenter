@@ -980,5 +980,31 @@ export const getTestDataToStdToSolve=async (req,res,next)=>
         return next(err);
     }
 }
+// gte the specefiec result to the user:
+export const getSpRseToStdController=async (req,res,next)=>
+{
+    try
+    {
+        // begt the id of the user:
+        const {_id}=req.data;
+        // get the id of the res:
+        const {resId}=req.params;
+        // chec the result:
+        const result=await resultsModel.findOne({_id:resId}).populate([{path:"student",populate:[{path:"user"}]},{path:"test"}]);
+        if(!result)
+        {
+            return next(new Error("check the id of the result you want to get"));
+        }
+        if(result.student.user._id.toString()!=_id.toString())
+        {
+            return next(new Error("you can't get this result because you are not the owner of this result"));
+        }
+        return res.json({success:true,result:result});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
 // if you delet the test deletth eresults of this test(final);
 

@@ -142,4 +142,9 @@ export const checkCourseId=joi.object(
 export const getWithFIlterOptionsForCourse=joi.object(
 {
 examName:joi.string().min(1).allow(""),
-}).required()
+}).required();
+
+export const getSpRes=joi.object({
+  resId:joi.string().min(5).max(40).required(),
+}).required();
+
