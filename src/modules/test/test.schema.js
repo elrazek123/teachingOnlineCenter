@@ -148,3 +148,7 @@ export const getSpRes=joi.object({
   resId:joi.string().min(5).max(40).required(),
 }).required();
 
+export const checkExamId=joi.object(
+{
+examId:joi.string().min(5).required(),
+}).required();

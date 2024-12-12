@@ -486,6 +486,7 @@ export const solveTestSchema=async (req,res,next)=>
         const {_id}=req.data;
         // get the test id:
         const {testId}=req.params;
+        // get the test course:
         // check if the test is exists fisrt or not:
         const test=await testModel.findOne({_id:testId});
         if(!test)
@@ -499,7 +500,7 @@ export const solveTestSchema=async (req,res,next)=>
             return next(new Error("you must be first join to this course first to be able to solve the test and watch all the course resources"));
         }
         // check on the user if  he take this test before:
-        const getResults=await resultsModel.findOne({student:_id,test:testId});
+        const getResults=await resultsModel.findOne({student:userPartcipints._id,test:testId});
         if(getResults)
         {
             return next(new Error("you can't take this test again because you are already take this before"));
@@ -1000,6 +1001,41 @@ export const getSpRseToStdController=async (req,res,next)=>
             return next(new Error("you can't get this result because you are not the owner of this result"));
         }
         return res.json({success:true,result:result});
+    }
+    catch(err)
+    {
+        return next(err);
+    }
+}
+// get the examresult by the ecxam id:
+export const getResByExamToUser=async (req,res,next)=>
+{
+    try
+    {
+        // eg the id of the user:
+        const {_id}=req.data;
+        // get the id of he exam he wan tto get it's res:
+        const {examId}=req.params;
+        // ceonst chekc on the exam:
+        const exam=await testModel.findOne({_id:examId});
+        if(!exam)
+        {
+            return next(new Error("the exam is not exists check the id and try again"));
+        }
+        // check on if he is particpints or not:
+        const getParticipnts=await participntsModel.findOne({user:_id,course:exam.forCourse});
+        console.log(getParticipnts);
+        if(!getParticipnts)
+        {
+            return next(new Error("you are not subscribe to this course to solve the exam or get the ressult of the exam"));
+        }
+        // check the result and send it:
+        const results=await resultsModel.findOne({student:getParticipnts._id,test:examId}).populate([{path:'student',populate:[{path:"user"}]},{path:'test'}]);
+        if(!results)
+        {
+            return next(new Error("you are not take this exam before to get the result of it"));
+        }
+        return res.json({success:true,result:results});
     }
     catch(err)
     {

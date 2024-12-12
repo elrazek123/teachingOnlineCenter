@@ -36,6 +36,8 @@ testRouter.get("/getCorseTests/:courseId",validation.paramsValidation(testSchema
 // egtt he tets data to the std:
 testRouter.get("/getTestDataToStd/:testId",authUser,validation.paramsValidation(testSchema.checktestIdSchema),testController.getTestDataToStdToSolve);
 // get specefiec rseult to the user ofr the student:
-testRouter.get("/getSpResToStd/:resId",authUser,validation.paramsValidation(testSchema.getSpRes),testController.getSpRseToStdController)
+testRouter.get("/getSpResToStd/:resId",authUser,validation.paramsValidation(testSchema.getSpRes),testController.getSpRseToStdController);
+// get the specefiec result by the exam Id:
+testRouter.get("/getTestResultToStd/:examId",authUser,validation.paramsValidation(testSchema.checkExamId),testController.getResByExamToUser)
 export default testRouter;
 
