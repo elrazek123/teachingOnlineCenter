@@ -955,6 +955,7 @@ export const getTestDataToStdToSolve=async (req,res,next)=>
         const {_id}=req.data;
         // eg the id of test:
         const {testId}=req.params;
+
         // check if the test is exists or not:
         const test=await testModel.findOne({_id:testId});
         if(!test)
@@ -968,13 +969,13 @@ export const getTestDataToStdToSolve=async (req,res,next)=>
             return next(new Error("you can't access this test because you are not have this course or subscribe to it"));
         }
         // check if the user alreafy take this test before or not:
-        const resultExists=await resultsModel.findOne({student:_id,test:testId});
+        const resultExists=await resultsModel.findOne({student:getSub._id,test:testId});
         if(resultExists)
         {
-            return next(new Error("you already take this test or quiz before"));
+            return res.json({success:true,testData:test,takenThisTestBfore:true});
         }
         // return the response:
-        return res.json({success:true,testData:test});
+        return res.json({success:true,testData:test,takenThisTestBfore:false});
     }
     catch(err)
     {
